@@ -1,12 +1,12 @@
 {
   "name": "questions-pour-un-champion",
-  "version": "2.0.0",
-  "description": "Jeu Questions pour un Champion - Version TV5 authentique avec 3 manches",
+  "version": "3.0.0",
+  "description": "Jeu Questions pour un Champion - Version QCM avec 30 secondes pour répondre",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["jeu", "quiz", "champion", "tv5", "france3"],
+  "keywords": ["jeu", "quiz", "champion", "tv5", "qcm"],
   "author": "",
   "license": "MIT",
   "dependencies": {
