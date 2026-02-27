@@ -820,4 +820,250 @@ function correct4S() {
 }
 
 function wrong4S() {
-    speak
+    speak('Mauvaise réponse ! La série est perdue.');
+    GameState.current4S.serie = 0;
+    updateSerieDisplay();
+    nextQuestion4S();
+}
+
+function endTurn4S() {
+    clearInterval(GameState.current4S.timerInterval);
+    
+    const playerId = GameState.current4S.remainingPlayers[GameState.current4S.currentPlayerIndex];
+    GameState.current4S.scores[playerId] = Math.max(GameState.current4S.scores[playerId], GameState.current4S.serie);
+    
+    speak(`Fin du temps. Série de ${GameState.current4S.serie} pour ${GameState.players[playerId].name}`);
+    
+    GameState.current4S.currentPlayerIndex++;
+    setTimeout(nextPlayer4S, 2000);
+}
+
+function end4Suite() {
+    const sorted = GameState.current4S.remainingPlayers.sort((a, b) => 
+        GameState.current4S.scores[b] - GameState.current4S.scores[a]
+    );
+    
+    const finalists = sorted.slice(0, 2);
+    
+    speak(`${GameState.players[finalists[0]].name} et ${GameState.players[finalists[1]].name} se qualifient pour le face à face !`);
+    
+    setTimeout(() => {
+        startFaceAFace(finalists);
+    }, 3000);
+}
+
+// ==================== MANCHE 3: FACE A FACE ====================
+
+function startFaceAFace(finalists) {
+    GameState.currentManche = 3;
+    document.getElementById('mancheIndicator').textContent = 'MANCHE 3: FACE À FACE (12 POINTS)';
+    showScreen('screenFaceAFace');
+    
+    GameState.currentFAF.players = finalists;
+    GameState.currentFAF.scores = [0, 0];
+    GameState.currentFAF.hasHand = null;
+    GameState.currentFAF.indiceIndex = 0;
+    
+    document.getElementById('fafName1').textContent = GameState.players[finalists[0]].name;
+    document.getElementById('fafName2').textContent = GameState.players[finalists[1]].name;
+    document.getElementById('fafName1').style.color = GameState.players[finalists[0]].color;
+    document.getElementById('fafName2').style.color = GameState.players[finalists[1]].color;
+    
+    updateFAFDisplay();
+    nextQuestionFAF();
+}
+
+function nextQuestionFAF() {
+    if (GameState.currentFAF.scores[0] >= 12 || GameState.currentFAF.scores[1] >= 12) {
+        endGame();
+        return;
+    }
+    
+    GameState.currentFAF.hasHand = null;
+    GameState.currentFAF.indiceIndex = 0;
+    GameState.currentFAF.zoneActive = 0;
+    
+    const questions = GameState.questions.faceAFace;
+    GameState.currentFAF.currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+    
+    document.getElementById('indiceReveal').textContent = `Thème: ${GameState.currentFAF.currentQuestion.theme} - Prenez ou laissez la main`;
+    document.getElementById('btnTakeHand').disabled = false;
+    document.getElementById('btnLeaveHand').disabled = false;
+    document.getElementById('answersFAF').style.display = 'none';
+    
+    updateZonesFAF();
+    updateFAFDisplay();
+    
+    speak(`Thème: ${GameState.currentFAF.currentQuestion.theme}. Prenez ou laissez la main.`);
+}
+
+function chooseHand(take) {
+    const currentPlayer = GameState.currentFAF.scores[0] <= GameState.currentFAF.scores[1] ? 0 : 1;
+    
+    if (take) {
+        GameState.currentFAF.hasHand = currentPlayer;
+        speak(`${GameState.players[GameState.currentFAF.players[currentPlayer]].name} prend la main !`);
+    } else {
+        GameState.currentFAF.hasHand = 1 - currentPlayer;
+        speak(`${GameState.players[GameState.currentFAF.players[currentPlayer]].name} laisse la main.`);
+    }
+    
+    document.getElementById('btnTakeHand').disabled = true;
+    document.getElementById('btnLeaveHand').disabled = true;
+    
+    updateFAFDisplay();
+    startTimerFAF();
+}
+
+function startTimerFAF() {
+    GameState.currentFAF.timer = 20;
+    GameState.currentFAF.zoneActive = 0;
+    
+    updateZonesFAF();
+    
+    // Afficher les options QCM
+    const container = document.getElementById('answersFAF');
+    const q = GameState.currentFAF.currentQuestion;
+    container.innerHTML = '';
+    container.style.display = 'grid';
+    
+    const labels = ['A', 'B', 'C', 'D'];
+    q.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'answer-option';
+        div.innerHTML = `<span class="answer-label">${labels[idx]}</span>${opt}`;
+        div.onclick = function() {
+            if (opt === q.reponse) {
+                this.classList.add('correct');
+                correctFAF();
+            } else {
+                this.classList.add('wrong');
+                wrongFAF();
+            }
+        };
+        container.appendChild(div);
+    });
+    
+    GameState.currentFAF.timerInterval = setInterval(() => {
+        GameState.currentFAF.timer -= 0.1;
+        
+        const elapsed = 20 - GameState.currentFAF.timer;
+        if (elapsed < 8) GameState.currentFAF.zoneActive = 0;
+        else if (elapsed < 14) GameState.currentFAF.zoneActive = 1;
+        else if (elapsed < 18) GameState.currentFAF.zoneActive = 2;
+        else GameState.currentFAF.zoneActive = 3;
+        
+        document.getElementById('timerFAF').textContent = Math.ceil(GameState.currentFAF.timer);
+        updateZonesFAF();
+        
+        if (GameState.currentFAF.timer <= 0) {
+            clearInterval(GameState.currentFAF.timerInterval);
+            wrongFAF();
+        }
+    }, 100);
+}
+
+function updateZonesFAF() {
+    const zones = document.querySelectorAll('.zone');
+    zones.forEach((z, idx) => {
+        z.classList.toggle('active', idx === GameState.currentFAF.zoneActive);
+    });
+    
+    document.getElementById('fafPlayer1').classList.toggle('has-hand', GameState.currentFAF.hasHand === 0);
+    document.getElementById('fafPlayer2').classList.toggle('has-hand', GameState.currentFAF.hasHand === 1);
+    document.getElementById('fafMain1').textContent = GameState.currentFAF.hasHand === 0 ? '✋ A LA MAIN' : '';
+    document.getElementById('fafMain2').textContent = GameState.currentFAF.hasHand === 1 ? '✋ A LA MAIN' : '';
+}
+
+function updateFAFDisplay() {
+    document.getElementById('fafScore1').textContent = GameState.currentFAF.scores[0];
+    document.getElementById('fafScore2').textContent = GameState.currentFAF.scores[1];
+}
+
+function nextIndice() {
+    const q = GameState.currentFAF.currentQuestion;
+    if (GameState.currentFAF.indiceIndex < q.indices.length) {
+        const indice = q.indices[GameState.currentFAF.indiceIndex];
+        document.getElementById('indiceReveal').innerHTML += `<br><span class="indice-number">${GameState.currentFAF.indiceIndex + 1}</span>${indice}`;
+        speak(`Indice: ${indice}`);
+        GameState.currentFAF.indiceIndex++;
+    }
+}
+
+function correctFAF() {
+    clearInterval(GameState.currentFAF.timerInterval);
+    
+    const points = [4, 3, 2, 1][GameState.currentFAF.zoneActive];
+    const winner = GameState.currentFAF.hasHand;
+    
+    GameState.currentFAF.scores[winner] += points;
+    speak(`Bonne réponse ! ${points} points !`);
+    
+    updateFAFDisplay();
+    
+    setTimeout(nextQuestionFAF, 2000);
+}
+
+function wrongFAF() {
+    clearInterval(GameState.currentFAF.timerInterval);
+    
+    const other = 1 - GameState.currentFAF.hasHand;
+    speak(`Mauvaise réponse ! La main passe à l'autre.`);
+    
+    setTimeout(nextQuestionFAF, 2000);
+}
+
+function endGame() {
+    const winnerIdx = GameState.currentFAF.scores[0] >= 12 ? 0 : 1;
+    const winner = GameState.players[GameState.currentFAF.players[winnerIdx]];
+    
+    showScreen('screenWinner');
+    document.getElementById('winnerName').textContent = winner.name;
+    document.getElementById('winnerName').style.color = winner.color;
+    
+    speak(`Félicitations à ${winner.name}, champion du jour !`);
+    
+    for (let i = 0; i < 100; i++) {
+        setTimeout(createConfetti, i * 50);
+    }
+}
+
+// ==================== UTILITAIRES ====================
+
+function setupKeyboard() {
+    // Plus besoin de clavier, tout se fait à la souris
+}
+
+function speak(text) {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'fr-FR';
+        utter.rate = 0.9;
+        window.speechSynthesis.speak(utter);
+    }
+}
+
+function stopAllTimers() {
+    clearInterval(GameState.current9PG.readingTimerInterval);
+    clearInterval(GameState.current9PG.responseTimerInterval);
+    clearInterval(GameState.current4S.timerInterval);
+    clearInterval(GameState.currentFAF.timerInterval);
+}
+
+function createConfetti() {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.backgroundColor = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#F9CA24'][Math.floor(Math.random() * 5)];
+    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+}
+
+function showQuestionsAdmin() {
+    alert('Gestion des questions - Pour ajouter des questions, modifiez le fichier game.js dans la section defaultQuestions.');
+}
+
+// Démarrage
+init();
