@@ -1,9 +1,9 @@
 // game.js
-// Questions pour un Champion - Version TV5 authentique
+// Questions pour un Champion - Version QCM avec 30 secondes pour répondre
 
 const GameState = {
     players: [],
-    currentManche: 0, // 0: menu, 1: 9PG, 2: 4Suite, 3: FaceAFace
+    currentManche: 0,
     questions: {
         neufPoints: [],
         quatreSuite: [],
@@ -12,15 +12,17 @@ const GameState = {
     
     // 9 Points Gagnants
     current9PG: {
-        qualified: [], // IDs des qualifiés
+        qualified: [],
         eliminated: [],
         currentQuestion: null,
         questionIndex: 0,
-        pointsValue: 1, // 1, 2 ou 3 points
+        pointsValue: 1,
         buzzerLocked: false,
         currentBuzzer: null,
-        timerInterval: null,
-        responseInterval: null
+        readingTimerInterval: null,
+        responseTimerInterval: null,
+        timeRemaining: 30,
+        selectedAnswer: null
     },
     
     // 4 à la Suite
@@ -29,10 +31,10 @@ const GameState = {
         currentPlayerIndex: 0,
         currentTheme: null,
         usedThemes: [],
-        serie: 0, // 0 à 4
+        serie: 0,
         timer: 40,
         timerInterval: null,
-        scores: {} // playerId -> best serie
+        scores: {}
     },
     
     // Face à Face
@@ -40,48 +42,146 @@ const GameState = {
         players: [],
         scores: [0, 0],
         currentQuestion: null,
-        hasHand: null, // 0 ou 1 (index dans currentFAF.players)
+        hasHand: null,
         indiceIndex: 0,
         timer: 20,
         timerInterval: null,
-        zoneActive: 0 // 0:4pts, 1:3pts, 2:2pts, 3:1pt
+        zoneActive: 0
     }
 };
 
-// Données par défaut
+// Données par défaut avec QCM (4 réponses)
 const defaultQuestions = {
     neufPoints: [
-        { q: "Dans quelle ville se trouve la Tour Eiffel ?", a: "Paris", points: 1 },
-        { q: "Quel est le plus grand océan du monde ?", a: "Pacifique", points: 1 },
-        { q: "Combien de planètes dans le système solaire ?", a: "8", points: 1 },
-        { q: "Qui a peint la Joconde ?", a: "Léonard de Vinci", points: 2 },
-        { q: "Quelle est la capitale de l'Australie ?", a: "Canberra", points: 2 },
-        { q: "En quelle année a eu lieu la Révolution française ?", a: "1789", points: 2 },
-        { q: "Quel est le symbole chimique de l'or ?", a: "Au", points: 3 },
-        { q: "Quelle est la racine carrée de 144 ?", a: "12", points: 3 },
-        { q: "Qui a écrit 'Les Misérables' ?", a: "Victor Hugo", points: 3 }
+        { 
+            q: "Dans quelle ville se trouve la Tour Eiffel ?", 
+            a: "Paris", 
+            options: ["Londres", "Berlin", "Paris", "Madrid"],
+            points: 1 
+        },
+        { 
+            q: "Quel est le plus grand océan du monde ?", 
+            a: "Pacifique", 
+            options: ["Atlantique", "Indien", "Pacifique", "Arctique"],
+            points: 1 
+        },
+        { 
+            q: "Combien de planètes dans le système solaire ?", 
+            a: "8", 
+            options: ["7", "8", "9", "10"],
+            points: 1 
+        },
+        { 
+            q: "Qui a peint la Joconde ?", 
+            a: "Léonard de Vinci", 
+            options: ["Michel-Ange", "Raphaël", "Léonard de Vinci", "Van Gogh"],
+            points: 2 
+        },
+        { 
+            q: "Quelle est la capitale de l'Australie ?", 
+            a: "Canberra", 
+            options: ["Sydney", "Melbourne", "Canberra", "Brisbane"],
+            points: 2 
+        },
+        { 
+            q: "En quelle année a eu lieu la Révolution française ?", 
+            a: "1789", 
+            options: ["1789", "1792", "1804", "1776"],
+            points: 2 
+        },
+        { 
+            q: "Quel est le symbole chimique de l'or ?", 
+            a: "Au", 
+            options: ["Ag", "Fe", "Au", "Cu"],
+            points: 3 
+        },
+        { 
+            q: "Quelle est la racine carrée de 144 ?", 
+            a: "12", 
+            options: ["10", "11", "12", "14"],
+            points: 3 
+        },
+        { 
+            q: "Qui a écrit 'Les Misérables' ?", 
+            a: "Victor Hugo", 
+            options: ["Émile Zola", "Victor Hugo", "Gustave Flaubert", "Alexandre Dumas"],
+            points: 3 
+        },
+        { 
+            q: "Quelle est la plus grande planète du système solaire ?", 
+            a: "Jupiter", 
+            options: ["Saturne", "Jupiter", "Neptune", "Uranus"],
+            points: 1 
+        },
+        { 
+            q: "Quel pays a remporté la Coupe du Monde 2018 ?", 
+            a: "France", 
+            options: ["Croatie", "France", "Belgique", "Angleterre"],
+            points: 2 
+        },
+        { 
+            q: "Quel est le plus long fleuve du monde ?", 
+            a: "Nil", 
+            options: ["Amazone", "Nil", "Mississippi", "Yangtsé"],
+            points: 2 
+        }
     ],
     quatreSuite: [
-        { theme: "Géographie", questions: ["Capitale de l'Italie ?", "Plus grand désert du monde ?", "Fleuve qui traverse Paris ?", "Plus haute montagne d'Europe ?"], answers: ["Rome", "Sahara", "Seine", "Mont Blanc"] },
-        { theme: "Histoire", questions: ["Premier président de la Vème République ?", "Année de la fin de la WWII ?", "Roi soleil ?", "Révolution de 1789 commence où ?"], answers: ["De Gaulle", "1945", "Louis XIV", "Paris"] },
-        { theme: "Sciences", questions: ["Planète la plus proche du soleil ?", "Formule de l'eau ?", "Vitesse de la lumière (km/s) ?", "Os le plus long du corps ?"], answers: ["Mercure", "H2O", "300000", "Fémur"] },
-        { theme: "Arts", questions: ["Auteur de 'Le Petit Prince' ?", "Peintre de 'La Nuit étoilée' ?", "Compositeur des 'Quatre Saisons' ?", "Sculpteur de 'Le Penseur' ?"], answers: ["Saint-Exupéry", "Van Gogh", "Vivaldi", "Rodin"] }
+        { 
+            theme: "Géographie", 
+            questions: [
+                { q: "Capitale de l'Italie ?", a: "Rome", options: ["Milan", "Rome", "Venise", "Naples"] },
+                { q: "Plus grand désert du monde ?", a: "Sahara", options: ["Gobi", "Sahara", "Kalahari", "Atacama"] },
+                { q: "Fleuve qui traverse Paris ?", a: "Seine", options: ["Loire", "Rhône", "Seine", "Garonne"] },
+                { q: "Plus haute montagne d'Europe ?", a: "Mont Blanc", options: ["Mont Blanc", "Cervin", "Mont Rose", "Weisshorn"] }
+            ]
+        },
+        { 
+            theme: "Histoire", 
+            questions: [
+                { q: "Premier président de la Vème République ?", a: "De Gaulle", options: ["De Gaulle", "Mitterrand", "Pompidou", "Giscard"] },
+                { q: "Année de la fin de la WWII ?", a: "1945", options: ["1944", "1945", "1946", "1943"] },
+                { q: "Roi soleil ?", a: "Louis XIV", options: ["Louis XIII", "Louis XIV", "Louis XV", "Henri IV"] },
+                { q: "Révolution de 1789 commence où ?", a: "Paris", options: ["Lyon", "Marseille", "Paris", "Versailles"] }
+            ]
+        },
+        { 
+            theme: "Sciences", 
+            questions: [
+                { q: "Planète la plus proche du soleil ?", a: "Mercure", options: ["Vénus", "Mercure", "Terre", "Mars"] },
+                { q: "Formule de l'eau ?", a: "H2O", options: ["CO2", "H2O", "O2", "NaCl"] },
+                { q: "Vitesse de la lumière (km/s) ?", a: "300000", options: ["150000", "300000", "400000", "250000"] },
+                { q: "Os le plus long du corps ?", a: "Fémur", options: ["Humérus", "Fémur", "Tibia", "Colonne"] }
+            ]
+        },
+        { 
+            theme: "Arts", 
+            questions: [
+                { q: "Auteur du 'Petit Prince' ?", a: "Saint-Exupéry", options: ["Saint-Exupéry", "Jules Verne", "Hugo", "Proust"] },
+                { q: "Peintre de 'La Nuit étoilée' ?", a: "Van Gogh", options: ["Picasso", "Monet", "Van Gogh", "Cézanne"] },
+                { q: "Compositeur des 'Quatre Saisons' ?", a: "Vivaldi", options: ["Mozart", "Bach", "Vivaldi", "Beethoven"] },
+                { q: "Sculpteur de 'Le Penseur' ?", a: "Rodin", options: ["Michel-Ange", "Rodin", "Donatello", "Bernin"] }
+            ]
+        }
     ],
     faceAFace: [
         { 
             theme: "Cinéma", 
             reponse: "Titanic", 
-            indices: ["Film de 1997", "Réalisé par James Cameron", "Histoire d'amour sur un bateau", "Leonardo DiCaprio", "Naufrage célèbre de 1912"] 
+            indices: ["Film de 1997", "Réalisé par James Cameron", "Histoire d'amour sur un bateau", "Leonardo DiCaprio", "Naufrage célèbre de 1912"],
+            options: ["Titanic", "Avatar", "Gladiator", "Braveheart"]
         },
         { 
             theme: "Gastronomie", 
             reponse: "Croissant", 
-            indices: ["Pâtisserie française", "Forme de lune", "Au beurre", "Petit déjeuner", "Origine autrichienne (Viennoiserie)"] 
+            indices: ["Pâtisserie française", "Forme de lune", "Au beurre", "Petit déjeuner", "Origine autrichienne"],
+            options: ["Croissant", "Pain au chocolat", "Brioche", "Baguette"]
         },
         { 
             theme: "Sport", 
             reponse: "Tour de France", 
-            indices: ["Compétition cycliste", "Créée en 1903", "Maillot jaune", "Contre la montre", "Grande Boucle"] 
+            indices: ["Compétition cycliste", "Créée en 1903", "Maillot jaune", "Contre la montre", "Grande Boucle"],
+            options: ["Tour de France", "Giro d'Italia", "Vuelta", "Paris-Roubaix"]
         }
     ]
 };
@@ -94,7 +194,7 @@ function init() {
 }
 
 function loadQuestions() {
-    const saved = localStorage.getItem('qpc_questions_v2');
+    const saved = localStorage.getItem('qpc_questions_v3');
     if (saved) {
         GameState.questions = JSON.parse(saved);
     } else {
@@ -104,7 +204,7 @@ function loadQuestions() {
 }
 
 function saveQuestions() {
-    localStorage.setItem('qpc_questions_v2', JSON.stringify(GameState.questions));
+    localStorage.setItem('qpc_questions_v3', JSON.stringify(GameState.questions));
 }
 
 // Navigation
@@ -135,7 +235,6 @@ function closeModal(modalId) {
 // Configuration joueurs
 function renderSetup() {
     const grid = document.getElementById('setupGrid');
-    const keys = ['A', 'P', 'L', 'M'];
     const colors = ['#E74C3C', '#3498DB', '#27AE60', '#F39C12'];
     
     grid.innerHTML = '';
@@ -144,7 +243,6 @@ function renderSetup() {
             <div class="player-setup">
                 <h3>Joueur ${i + 1}</h3>
                 <input type="text" id="name${i}" placeholder="Nom du joueur" value="Joueur ${i + 1}">
-                <div class="buzzer-key">⌨️ Touche ${keys[i]}</div>
                 <div style="width: 100%; height: 10px; background: ${colors[i]}; border-radius: 5px; margin-top: 10px;"></div>
             </div>
         `;
@@ -152,8 +250,6 @@ function renderSetup() {
 }
 
 function startGame() {
-    // Initialiser les joueurs
-    const keys = ['a', 'p', 'l', 'm'];
     const colors = ['#E74C3C', '#3498DB', '#27AE60', '#F39C12'];
     
     GameState.players = [];
@@ -161,14 +257,12 @@ function startGame() {
         GameState.players.push({
             id: i,
             name: document.getElementById(`name${i}`).value || `Joueur ${i + 1}`,
-            key: keys[i],
             color: colors[i],
             score9PG: 0,
             qualified: false
         });
     }
     
-    // Réinitialiser les manches
     GameState.current9PG = {
         qualified: [],
         eliminated: [],
@@ -177,8 +271,10 @@ function startGame() {
         pointsValue: 1,
         buzzerLocked: false,
         currentBuzzer: null,
-        timerInterval: null,
-        responseInterval: null
+        readingTimerInterval: null,
+        responseTimerInterval: null,
+        timeRemaining: 30,
+        selectedAnswer: null
     };
     
     start9PG();
@@ -206,12 +302,21 @@ function renderPlayers9PG() {
         if (player.qualified) div.classList.add('qualified');
         if (GameState.current9PG.eliminated.includes(idx)) div.classList.add('eliminated');
         if (GameState.current9PG.currentBuzzer === idx) div.classList.add('buzzer-active');
+        if (!GameState.current9PG.buzzerLocked && !player.qualified && !GameState.current9PG.eliminated.includes(idx)) {
+            div.classList.add('can-buzz');
+        }
+        
+        const canBuzz = !GameState.current9PG.buzzerLocked && !player.qualified && !GameState.current9PG.eliminated.includes(idx);
         
         div.innerHTML = `
             <div class="qualification-status">QUALIFIÉ ✓</div>
             <div class="player-name" style="color: ${player.color}">${player.name}</div>
             <div class="player-score-9pg">${player.score9PG}</div>
-            <div style="font-size: 0.9rem; margin-top: 10px;">Touche ${player.key.toUpperCase()}</div>
+            <button class="btn-buzz ${GameState.current9PG.currentBuzzer === idx ? 'active' : ''}" 
+                    onclick="handleBuzz9PG(${idx})" 
+                    ${!canBuzz ? 'disabled' : ''}>
+                ${GameState.current9PG.currentBuzzer === idx ? '✓ EN RÉPONSE' : 'JE VEUX RÉPONDRE'}
+            </button>
         `;
         container.appendChild(div);
     });
@@ -232,7 +337,6 @@ function updatePointsIndicator() {
 }
 
 function nextQuestion9PG() {
-    // Vérifier si on a 3 qualifiés
     if (GameState.current9PG.qualified.length >= 3) {
         end9PG();
         return;
@@ -241,6 +345,7 @@ function nextQuestion9PG() {
     // Réinitialiser l'état
     GameState.current9PG.currentBuzzer = null;
     GameState.current9PG.buzzerLocked = false;
+    GameState.current9PG.selectedAnswer = null;
     stopAllTimers();
     
     // Afficher la question
@@ -250,33 +355,34 @@ function nextQuestion9PG() {
     
     document.getElementById('question9PG').textContent = q.q;
     document.getElementById('btnNextQ').style.display = 'none';
-    document.getElementById('btnCorrect').style.display = 'none';
-    document.getElementById('btnWrong').style.display = 'none';
-    document.getElementById('btnReset').style.display = 'none';
-    document.getElementById('timer9PGContainer').style.display = 'block';
+    document.getElementById('btnValidate').style.display = 'none';
+    document.getElementById('btnCancel').style.display = 'none';
+    document.getElementById('timerReadingContainer').style.display = 'block';
+    document.getElementById('timerResponseContainer').style.display = 'none';
+    document.getElementById('answersContainer').style.display = 'none';
     document.getElementById('buzzerInstr').style.display = 'block';
+    document.getElementById('buzzerInstr').textContent = '⚡ CLIQUEZ SUR "JE VEUX RÉPONDRE" ! ⚡';
     
-    // Lire la question et démarrer le timer visuel
+    // Lire la question et démarrer le timer de lecture (5 secondes)
     speak(q.q);
-    startVisualTimer9PG();
+    startReadingTimer();
     updatePointsIndicator();
     renderPlayers9PG();
 }
 
-function startVisualTimer9PG() {
-    const fill = document.getElementById('timerBarFill');
-    const text = document.getElementById('timerText');
+function startReadingTimer() {
+    const fill = document.getElementById('timerReadingFill');
+    const text = document.getElementById('timerReadingText');
     let timeLeft = 5;
     let width = 100;
     
-    GameState.current9PG.timerInterval = setInterval(() => {
+    GameState.current9PG.readingTimerInterval = setInterval(() => {
         timeLeft -= 0.05;
         width = (timeLeft / 5) * 100;
         
         fill.style.width = width + '%';
         text.textContent = Math.ceil(timeLeft);
         
-        // Changer la couleur vers la fin
         if (timeLeft <= 2) {
             fill.style.background = 'linear-gradient(90deg, #ff0000 0%, #990000 100%)';
         } else {
@@ -284,68 +390,191 @@ function startVisualTimer9PG() {
         }
         
         if (timeLeft <= 0) {
-            clearInterval(GameState.current9PG.timerInterval);
-            handleTimeout9PG();
+            clearInterval(GameState.current9PG.readingTimerInterval);
+            handleReadingTimeout();
         }
     }, 50);
 }
 
-function handleTimeout9PG() {
+function handleReadingTimeout() {
     GameState.current9PG.buzzerLocked = true;
     document.getElementById('buzzerInstr').textContent = '⏰ TEMPS ÉCOULÉ !';
-    speak('Temps écoulé !');
+    speak('Temps écoulé ! Personne n\'a buzzé.');
     
     setTimeout(() => {
-        showAnswer9PG();
+        showCorrectAnswer();
     }, 2000);
 }
 
-function handleBuzzer9PG(playerId) {
+function handleBuzz9PG(playerId) {
     if (GameState.current9PG.buzzerLocked || GameState.current9PG.currentBuzzer !== null) return;
     if (GameState.players[playerId].qualified) return;
     if (GameState.current9PG.eliminated.includes(playerId)) return;
     
-    // Arrêter le timer
-    clearInterval(GameState.current9PG.timerInterval);
+    // Arrêter le timer de lecture
+    clearInterval(GameState.current9PG.readingTimerInterval);
     
     GameState.current9PG.currentBuzzer = playerId;
     GameState.current9PG.buzzerLocked = true;
     
     const player = GameState.players[playerId];
-    document.getElementById('buzzerPlayerInfo').innerHTML = 
-        `<span style="color: ${player.color}; font-size: 3rem;">${player.name}</span>`;
-    document.getElementById('modalBuzzer').classList.add('active');
     
-    speak(`${player.name} a buzzé !`);
+    // Afficher le modal
+    document.getElementById('answeringPlayerInfo').innerHTML = 
+        `<span style="color: ${player.color}; font-size: 3rem;">${player.name}</span>`;
+    document.getElementById('modalAnswering').classList.add('active');
+    
+    speak(`${player.name} a buzzé ! Vous avez 30 secondes pour répondre.`);
+    
+    // Masquer le timer de lecture, afficher le timer de réponse
+    document.getElementById('timerReadingContainer').style.display = 'none';
+    document.getElementById('timerResponseContainer').style.display = 'block';
+    document.getElementById('buzzerInstr').textContent = `${player.name} choisit sa réponse...`;
+    
+    // Afficher les options de réponse
+    showAnswerOptions();
+    
+    // Démarrer le timer de 30 secondes
+    startResponseTimer();
+    
+    // Mettre à jour l'affichage des joueurs
     renderPlayers9PG();
     
-    // Timer de réponse de 5 secondes
-    let responseTime = 5;
-    document.getElementById('buzzerInstr').textContent = `${player.name} doit répondre... ${responseTime}s`;
+    // Afficher les boutons de contrôle
+    document.getElementById('btnValidate').style.display = 'inline-block';
+    document.getElementById('btnCancel').style.display = 'inline-block';
+}
+
+function showAnswerOptions() {
+    const container = document.getElementById('answersContainer');
+    const q = GameState.current9PG.currentQuestion;
     
-    GameState.current9PG.responseInterval = setInterval(() => {
-        responseTime--;
-        document.getElementById('buzzerInstr').textContent = `${player.name} doit répondre... ${responseTime}s`;
+    container.innerHTML = '';
+    container.style.display = 'grid';
+    
+    const labels = ['A', 'B', 'C', 'D'];
+    
+    q.options.forEach((option, idx) => {
+        const div = document.createElement('div');
+        div.className = 'answer-option';
+        div.onclick = () => selectAnswer(idx, div);
+        div.innerHTML = `<span class="answer-label">${labels[idx]}</span>${option}`;
+        container.appendChild(div);
+    });
+}
+
+function selectAnswer(index, element) {
+    // Désélectionner les autres
+    document.querySelectorAll('.answer-option').forEach(el => {
+        el.classList.remove('selected');
+    });
+    
+    // Sélectionner celle-ci
+    element.classList.add('selected');
+    GameState.current9PG.selectedAnswer = index;
+    
+    // Feedback sonore
+    speak('Réponse sélectionnée');
+}
+
+function startResponseTimer() {
+    const timerDisplay = document.getElementById('timer30s');
+    GameState.current9PG.timeRemaining = 30;
+    
+    GameState.current9PG.responseTimerInterval = setInterval(() => {
+        GameState.current9PG.timeRemaining--;
+        timerDisplay.textContent = GameState.current9PG.timeRemaining;
         
-        if (responseTime <= 0) {
-            clearInterval(GameState.current9PG.responseInterval);
-            wrongAnswer9PG();
+        if (GameState.current9PG.timeRemaining <= 10) {
+            timerDisplay.classList.add('warning');
+        } else {
+            timerDisplay.classList.remove('warning');
+        }
+        
+        if (GameState.current9PG.timeRemaining <= 0) {
+            clearInterval(GameState.current9PG.responseTimerInterval);
+            handleResponseTimeout();
         }
     }, 1000);
+}
+
+function handleResponseTimeout() {
+    const player = GameState.players[GameState.current9PG.currentBuzzer];
+    speak(`Temps écoulé pour ${player.name} !`);
     
-    // Montrer les boutons de contrôle
-    document.getElementById('btnCorrect').style.display = 'inline-block';
-    document.getElementById('btnWrong').style.display = 'inline-block';
-    document.getElementById('btnReset').style.display = 'inline-block';
+    // Marquer comme mauvaise réponse
+    wrongAnswer9PG();
+}
+
+function validateAnswer() {
+    if (GameState.current9PG.selectedAnswer === null) {
+        alert('Veuillez sélectionner une réponse !');
+        return;
+    }
+    
+    clearInterval(GameState.current9PG.responseTimerInterval);
+    
+    const q = GameState.current9PG.currentQuestion;
+    const selectedOption = q.options[GameState.current9PG.selectedAnswer];
+    
+    // Vérifier si c'est la bonne réponse
+    if (selectedOption === q.a) {
+        correctAnswer9PG();
+    } else {
+        // Montrer la mauvaise réponse sélectionnée
+        document.querySelectorAll('.answer-option').forEach((el, idx) => {
+            if (idx === GameState.current9PG.selectedAnswer) {
+                el.classList.add('wrong');
+            }
+            if (q.options[idx] === q.a) {
+                el.classList.add('correct');
+            }
+            el.classList.add('disabled');
+        });
+        
+        setTimeout(() => {
+            wrongAnswer9PG();
+        }, 2000);
+    }
+}
+
+function cancelBuzz() {
+    clearInterval(GameState.current9PG.responseTimerInterval);
+    
+    // Réinitialiser
+    GameState.current9PG.currentBuzzer = null;
+    GameState.current9PG.buzzerLocked = false;
+    GameState.current9PG.selectedAnswer = null;
+    
+    // Cacher les éléments de réponse
+    document.getElementById('timerResponseContainer').style.display = 'none';
+    document.getElementById('answersContainer').style.display = 'none';
+    document.getElementById('btnValidate').style.display = 'none';
+    document.getElementById('btnCancel').style.display = 'none';
+    
+    // Redémarrer le timer de lecture
+    document.getElementById('timerReadingContainer').style.display = 'block';
+    startReadingTimer();
+    
+    renderPlayers9PG();
+    closeModal('modalAnswering');
 }
 
 function correctAnswer9PG() {
-    clearInterval(GameState.current9PG.responseInterval);
     const playerId = GameState.current9PG.currentBuzzer;
     const player = GameState.players[playerId];
     const points = GameState.current9PG.pointsValue;
     
     player.score9PG += points;
+    
+    // Animation de la bonne réponse
+    document.querySelectorAll('.answer-option').forEach((el, idx) => {
+        if (GameState.current9PG.currentQuestion.options[idx] === GameState.current9PG.currentQuestion.a) {
+            el.classList.add('correct');
+        }
+        el.classList.add('disabled');
+    });
+    
     speak(`Bonne réponse ! ${points} point${points > 1 ? 's' : ''} pour ${player.name}`);
     
     // Vérifier qualification
@@ -357,16 +586,14 @@ function correctAnswer9PG() {
     }
     
     renderPlayers9PG();
-    showAnswer9PG();
     
     setTimeout(() => {
-        closeModal('modalBuzzer');
+        closeModal('modalAnswering');
         nextQuestion9PG();
-    }, 2000);
+    }, 3000);
 }
 
 function wrongAnswer9PG() {
-    clearInterval(GameState.current9PG.responseInterval);
     const playerId = GameState.current9PG.currentBuzzer;
     const player = GameState.players[playerId];
     
@@ -375,37 +602,31 @@ function wrongAnswer9PG() {
     // Réinitialiser pour les autres
     GameState.current9PG.currentBuzzer = null;
     GameState.current9PG.buzzerLocked = false;
+    GameState.current9PG.selectedAnswer = null;
     
-    document.getElementById('btnCorrect').style.display = 'none';
-    document.getElementById('btnWrong').style.display = 'none';
+    // Cacher les réponses
+    document.getElementById('timerResponseContainer').style.display = 'none';
+    document.getElementById('answersContainer').style.display = 'none';
+    document.getElementById('btnValidate').style.display = 'none';
+    document.getElementById('btnCancel').style.display = 'none';
+    document.getElementById('timerReadingContainer').style.display = 'block';
     
-    // Redémarrer le timer si temps restant
-    startVisualTimer9PG();
+    // Redémarrer le timer de lecture si temps restant
+    startReadingTimer();
     renderPlayers9PG();
-    closeModal('modalBuzzer');
+    closeModal('modalAnswering');
 }
 
-function resetBuzzers9PG() {
-    clearInterval(GameState.current9PG.responseInterval);
-    GameState.current9PG.currentBuzzer = null;
-    GameState.current9PG.buzzerLocked = false;
-    document.getElementById('btnCorrect').style.display = 'none';
-    document.getElementById('btnWrong').style.display = 'none';
-    startVisualTimer9PG();
-    renderPlayers9PG();
-    closeModal('modalBuzzer');
-}
-
-function showAnswer9PG() {
+function showCorrectAnswer() {
     const q = GameState.current9PG.currentQuestion;
     document.getElementById('question9PG').innerHTML = 
         `${q.q}<br><br><span style="color: #90EE90; font-size: 1.5rem;">Réponse: ${q.a}</span>`;
     document.getElementById('btnNextQ').style.display = 'inline-block';
+    document.getElementById('timerReadingContainer').style.display = 'none';
     speak(`La réponse était: ${q.a}`);
 }
 
 function end9PG() {
-    // Déterminer le 4ème éliminé (celui qui n'est pas qualifié)
     const eliminated = GameState.players.findIndex((p, idx) => 
         !GameState.current9PG.qualified.includes(idx)
     );
@@ -425,7 +646,6 @@ function start4Suite() {
     document.getElementById('mancheIndicator').textContent = 'MANCHE 2: 4 À LA SUITE';
     showScreen('screen4Suite');
     
-    // Initialiser avec les 3 qualifiés dans l'ordre de qualification
     GameState.current4S.remainingPlayers = [...GameState.current9PG.qualified];
     GameState.current4S.usedThemes = [];
     GameState.current4S.scores = {};
@@ -454,7 +674,6 @@ function renderThemes4S() {
         grid.appendChild(div);
     });
     
-    // Ajouter le thème mystère
     const mystere = document.createElement('div');
     mystere.className = 'theme-card theme-mystere';
     mystere.onclick = () => selectTheme4S('mystere');
@@ -467,7 +686,6 @@ function renderThemes4S() {
 
 function nextPlayer4S() {
     if (GameState.current4S.currentPlayerIndex >= GameState.current4S.remainingPlayers.length) {
-        // Tous les joueurs ont joué, voir si on fait un deuxième tour ou on passe au FAF
         if (GameState.current4S.usedThemes.length < 3) {
             GameState.current4S.currentPlayerIndex = 0;
         } else {
@@ -496,7 +714,6 @@ function selectTheme4S(themeIdx) {
     let themeName;
     if (themeIdx === 'mystere') {
         themeName = 'Thème Mystère';
-        // Choisir un thème aléatoire pour le mystère
         const available = GameState.questions.quatreSuite.filter((_, i) => 
             !GameState.current4S.usedThemes.includes(i)
         );
@@ -510,6 +727,7 @@ function selectTheme4S(themeIdx) {
     document.getElementById('themesGrid').style.display = 'none';
     document.getElementById('game4Suite').style.display = 'block';
     document.getElementById('question4S').textContent = 'Prêt ? Cliquez sur Démarrer';
+    document.getElementById('answers4S').style.display = 'none';
     document.getElementById('btnStart4S').style.display = 'inline-block';
     
     updateSerieDisplay();
@@ -538,13 +756,42 @@ function nextQuestion4S() {
     const qIdx = GameState.current4S.serie;
     
     if (qIdx >= theme.questions.length) {
-        // Toutes les questions répondues
         endTurn4S();
         return;
     }
     
-    document.getElementById('question4S').textContent = theme.questions[qIdx];
-    speak(theme.questions[qIdx]);
+    const q = theme.questions[qIdx];
+    document.getElementById('question4S').textContent = q.q;
+    
+    // Afficher les options QCM
+    const container = document.getElementById('answers4S');
+    container.innerHTML = '';
+    container.style.display = 'grid';
+    
+    const labels = ['A', 'B', 'C', 'D'];
+    q.options.forEach((opt, idx) => {
+        const div = document.createElement('div');
+        div.className = 'answer-option';
+        div.innerHTML = `<span class="answer-label">${labels[idx]}</span>${opt}`;
+        div.onclick = function() {
+            // Vérifier la réponse immédiatement
+            if (opt === q.a) {
+                this.classList.add('correct');
+                setTimeout(() => correct4S(), 1000);
+            } else {
+                this.classList.add('wrong');
+                document.querySelectorAll('.answer-option').forEach((el, i) => {
+                    if (q.options[i] === q.a) el.classList.add('correct');
+                });
+                setTimeout(() => wrong4S(), 1500);
+            }
+            // Désactiver tous les clics
+            document.querySelectorAll('.answer-option').forEach(el => el.style.pointerEvents = 'none');
+        };
+        container.appendChild(div);
+    });
+    
+    speak(q.q);
 }
 
 function updateSerieDisplay() {
@@ -563,7 +810,6 @@ function correct4S() {
     speak('Bonne réponse !');
     
     if (GameState.current4S.serie >= 4) {
-        // 4 à la suite réussi !
         createConfetti();
         speak('4 à la suite ! Excellent !');
         setTimeout(endTurn4S, 1500);
@@ -574,254 +820,4 @@ function correct4S() {
 }
 
 function wrong4S() {
-    speak('Mauvaise réponse ! La série est perdue.');
-    GameState.current4S.serie = 0;
-    updateSerieDisplay();
-    
-    // Continuer avec la question suivante mais série à 0
-    const theme = GameState.current4S.currentThemeData;
-    const currentQ = GameState.current4S.serie; // 0 car reset
-    
-    // Passer à la question suivante quand même
-    if (currentQ < theme.questions.length - 1) {
-        // On garde l'index mais on affiche la suivante
-        // En vrai jeu, on continue avec les questions suivantes
-    }
-}
-
-function endTurn4S() {
-    clearInterval(GameState.current4S.timerInterval);
-    
-    const playerId = GameState.current4S.remainingPlayers[GameState.current4S.currentPlayerIndex];
-    GameState.current4S.scores[playerId] = Math.max(GameState.current4S.scores[playerId], GameState.current4S.serie);
-    
-    speak(`Fin du temps. Série de ${GameState.current4S.serie} pour ${GameState.players[playerId].name}`);
-    
-    GameState.current4S.currentPlayerIndex++;
-    setTimeout(nextPlayer4S, 2000);
-}
-
-function end4Suite() {
-    // Trier les joueurs par score
-    const sorted = GameState.current4S.remainingPlayers.sort((a, b) => 
-        GameState.current4S.scores[b] - GameState.current4S.scores[a]
-    );
-    
-    // Prendre les 2 meilleurs
-    const finalists = sorted.slice(0, 2);
-    
-    speak(`${GameState.players[finalists[0]].name} et ${GameState.players[finalists[1]].name} se qualifient pour le face à face !`);
-    
-    setTimeout(() => {
-        startFaceAFace(finalists);
-    }, 3000);
-}
-
-// ==================== MANCHE 3: FACE A FACE ====================
-
-function startFaceAFace(finalists) {
-    GameState.currentManche = 3;
-    document.getElementById('mancheIndicator').textContent = 'MANCHE 3: FACE À FACE (12 POINTS)';
-    showScreen('screenFaceAFace');
-    
-    GameState.currentFAF.players = finalists;
-    GameState.currentFAF.scores = [0, 0];
-    GameState.currentFAF.hasHand = null;
-    GameState.currentFAF.indiceIndex = 0;
-    
-    document.getElementById('fafName1').textContent = GameState.players[finalists[0]].name;
-    document.getElementById('fafName2').textContent = GameState.players[finalists[1]].name;
-    document.getElementById('fafName1').style.color = GameState.players[finalists[0]].color;
-    document.getElementById('fafName2').style.color = GameState.players[finalists[1]].color;
-    
-    updateFAFDisplay();
-    nextQuestionFAF();
-}
-
-function nextQuestionFAF() {
-    // Vérifier victoire
-    if (GameState.currentFAF.scores[0] >= 12 || GameState.currentFAF.scores[1] >= 12) {
-        endGame();
-        return;
-    }
-    
-    GameState.currentFAF.hasHand = null;
-    GameState.currentFAF.indiceIndex = 0;
-    GameState.currentFAF.zoneActive = 0;
-    
-    // Choisir une question
-    const questions = GameState.questions.faceAFace;
-    GameState.currentFAF.currentQuestion = questions[Math.floor(Math.random() * questions.length)];
-    
-    document.getElementById('indiceReveal').textContent = `Thème: ${GameState.currentFAF.currentQuestion.theme} - Prenez ou laissez la main`;
-    document.getElementById('btnTakeHand').disabled = false;
-    document.getElementById('btnLeaveHand').disabled = false;
-    
-    updateZonesFAF();
-    updateFAFDisplay();
-    
-    speak(`Thème: ${GameState.currentFAF.currentQuestion.theme}. Prenez ou laissez la main.`);
-}
-
-function chooseHand(take) {
-    const currentPlayer = GameState.currentFAF.scores[0] <= GameState.currentFAF.scores[1] ? 0 : 1;
-    
-    if (take) {
-        GameState.currentFAF.hasHand = currentPlayer;
-        speak(`${GameState.players[GameState.currentFAF.players[currentPlayer]].name} prend la main !`);
-    } else {
-        GameState.currentFAF.hasHand = 1 - currentPlayer;
-        speak(`${GameState.players[GameState.currentFAF.players[currentPlayer]].name} laisse la main. ${GameState.players[GameState.currentFAF.players[1-currentPlayer]].name} répondra.`);
-    }
-    
-    document.getElementById('btnTakeHand').disabled = true;
-    document.getElementById('btnLeaveHand').disabled = true;
-    
-    updateFAFDisplay();
-    startTimerFAF();
-}
-
-function startTimerFAF() {
-    GameState.currentFAF.timer = 20;
-    GameState.currentFAF.zoneActive = 0;
-    
-    updateZonesFAF();
-    
-    GameState.currentFAF.timerInterval = setInterval(() => {
-        GameState.currentFAF.timer -= 0.1;
-        
-        // Déterminer la zone active
-        const elapsed = 20 - GameState.currentFAF.timer;
-        if (elapsed < 8) GameState.currentFAF.zoneActive = 0; // 4 pts
-        else if (elapsed < 14) GameState.currentFAF.zoneActive = 1; // 3 pts
-        else if (elapsed < 18) GameState.currentFAF.zoneActive = 2; // 2 pts
-        else GameState.currentFAF.zoneActive = 3; // 1 pt
-        
-        document.getElementById('timerFAF').textContent = Math.ceil(GameState.currentFAF.timer);
-        updateZonesFAF();
-        
-        if (GameState.currentFAF.timer <= 0) {
-            clearInterval(GameState.currentFAF.timerInterval);
-            wrongFAF();
-        }
-    }, 100);
-}
-
-function updateZonesFAF() {
-    const zones = document.querySelectorAll('.zone');
-    zones.forEach((z, idx) => {
-        z.classList.toggle('active', idx === GameState.currentFAF.zoneActive);
-    });
-    
-    // Mettre à jour qui a la main
-    document.getElementById('fafPlayer1').classList.toggle('has-hand', GameState.currentFAF.hasHand === 0);
-    document.getElementById('fafPlayer2').classList.toggle('has-hand', GameState.currentFAF.hasHand === 1);
-    document.getElementById('fafMain1').textContent = GameState.currentFAF.hasHand === 0 ? '✋ A LA MAIN' : '';
-    document.getElementById('fafMain2').textContent = GameState.currentFAF.hasHand === 1 ? '✋ A LA MAIN' : '';
-}
-
-function updateFAFDisplay() {
-    document.getElementById('fafScore1').textContent = GameState.currentFAF.scores[0];
-    document.getElementById('fafScore2').textContent = GameState.currentFAF.scores[1];
-}
-
-function nextIndice() {
-    const q = GameState.currentFAF.currentQuestion;
-    if (GameState.currentFAF.indiceIndex < q.indices.length) {
-        const indice = q.indices[GameState.currentFAF.indiceIndex];
-        document.getElementById('indiceReveal').innerHTML += `<br><span class="indice-number">${GameState.currentFAF.indiceIndex + 1}</span>${indice}`;
-        speak(`Indice: ${indice}`);
-        GameState.currentFAF.indiceIndex++;
-    }
-}
-
-function correctFAF() {
-    clearInterval(GameState.currentFAF.timerInterval);
-    
-    const points = [4, 3, 2, 1][GameState.currentFAF.zoneActive];
-    const winner = GameState.currentFAF.hasHand;
-    
-    GameState.currentFAF.scores[winner] += points;
-    speak(`Bonne réponse ! ${points} points pour ${GameState.players[GameState.currentFAF.players[winner]].name} !`);
-    
-    updateFAFDisplay();
-    
-    setTimeout(nextQuestionFAF, 2000);
-}
-
-function wrongFAF() {
-    clearInterval(GameState.currentFAF.timerInterval);
-    
-    // La main passe à l'autre
-    const other = 1 - GameState.currentFAF.hasHand;
-    speak(`Mauvaise réponse ! La main passe à ${GameState.players[GameState.currentFAF.players[other]].name}`);
-    
-    // En vrai, l'autre joue les indices restants dans les zones 3 et 1
-    // Simplifié ici: on passe à la question suivante
-    setTimeout(nextQuestionFAF, 2000);
-}
-
-function endGame() {
-    const winnerIdx = GameState.currentFAF.scores[0] >= 12 ? 0 : 1;
-    const winner = GameState.players[GameState.currentFAF.players[winnerIdx]];
-    
-    showScreen('screenWinner');
-    document.getElementById('winnerName').textContent = winner.name;
-    document.getElementById('winnerName').style.color = winner.color;
-    
-    speak(`Félicitations à ${winner.name}, champion du jour !`);
-    
-    for (let i = 0; i < 100; i++) {
-        setTimeout(createConfetti, i * 50);
-    }
-}
-
-// ==================== UTILITAIRES ====================
-
-function setupKeyboard() {
-    document.addEventListener('keydown', (e) => {
-        const key = e.key.toLowerCase();
-        
-        if (GameState.currentManche === 1) { // 9PG
-            const player = GameState.players.findIndex(p => p.key === key);
-            if (player !== -1) {
-                handleBuzzer9PG(player);
-            }
-        }
-    });
-}
-
-function speak(text) {
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'fr-FR';
-        utter.rate = 0.9;
-        window.speechSynthesis.speak(utter);
-    }
-}
-
-function stopAllTimers() {
-    clearInterval(GameState.current9PG.timerInterval);
-    clearInterval(GameState.current9PG.responseInterval);
-    clearInterval(GameState.current4S.timerInterval);
-    clearInterval(GameState.currentFAF.timerInterval);
-}
-
-function createConfetti() {
-    const c = document.createElement('div');
-    c.className = 'confetti';
-    c.style.left = Math.random() * 100 + 'vw';
-    c.style.backgroundColor = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#F9CA24'][Math.floor(Math.random() * 5)];
-    c.style.animationDuration = (Math.random() * 2 + 2) + 's';
-    document.body.appendChild(c);
-    setTimeout(() => c.remove(), 4000);
-}
-
-// Admin questions (simplifié)
-function showQuestionsAdmin() {
-    alert('Gestion des questions - À implémenter selon vos besoins\n\nVous pouvez modifier le fichier game.js pour ajouter vos propres questions dans les tableaux defaultQuestions.');
-}
-
-// Démarrage
-init();
+    speak
