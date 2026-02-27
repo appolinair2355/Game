@@ -137,11 +137,21 @@
         .player-9pg.buzzer-active {
             box-shadow: 0 0 30px var(--or);
             transform: scale(1.05);
+            border-color: var(--or);
+        }
+
+        .player-9pg.can-buzz {
+            animation: pulse-blue 1s infinite;
         }
 
         @keyframes pulse-gold {
             0%, 100% { box-shadow: 0 0 20px var(--or); }
             50% { box-shadow: 0 0 40px var(--or), 0 0 60px var(--or); }
+        }
+
+        @keyframes pulse-blue {
+            0%, 100% { box-shadow: 0 0 10px var(--bleu-clair); }
+            50% { box-shadow: 0 0 25px var(--bleu-clair); }
         }
 
         .player-name {
@@ -176,6 +186,43 @@
 
         .player-9pg.qualified .qualification-status {
             display: block;
+        }
+
+        .btn-buzz {
+            background: linear-gradient(145deg, var(--rouge) 0%, #c0392b 100%);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 30px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-buzz:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px var(--rouge);
+        }
+
+        .btn-buzz:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .btn-buzz.active {
+            background: linear-gradient(145deg, var(--vert) 0%, #229954 100%);
+            animation: pulse-green 1s infinite;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 10px var(--vert); }
+            50% { box-shadow: 0 0 25px var(--vert); }
         }
 
         /* ZONE QUESTION 9PG */
@@ -261,6 +308,100 @@
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
+        }
+
+        /* OPTIONS DE REPONSE (QCM) */
+        .answers-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .answer-option {
+            background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            border: 3px solid white;
+            border-radius: 15px;
+            padding: 25px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .answer-option:hover:not(.disabled) {
+            background: linear-gradient(145deg, var(--bleu-clair) 0%, var(--bleu-france) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .answer-option.selected {
+            background: linear-gradient(145deg, var(--or) 0%, #FFA500 100%);
+            border-color: white;
+            transform: scale(1.05);
+        }
+
+        .answer-option.correct {
+            background: linear-gradient(145deg, var(--vert) 0%, #229954 100%) !important;
+            border-color: #90EE90;
+            animation: pulse-correct 0.5s;
+        }
+
+        .answer-option.wrong {
+            background: linear-gradient(145deg, var(--rouge) 0%, #922b21 100%) !important;
+            border-color: #ff9999;
+            opacity: 0.7;
+        }
+
+        .answer-option.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        @keyframes pulse-correct {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .answer-label {
+            display: inline-block;
+            background: var(--or);
+            color: black;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            line-height: 40px;
+            font-weight: 900;
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* TIMER 30 SECONDES */
+        .timer-30s-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .timer-30s {
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--or);
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-30s.warning {
+            color: var(--rouge);
+            animation: pulse-timer 0.5s infinite;
+        }
+
+        @keyframes pulse-timer {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         /* 4 A LA SUITE */
@@ -613,12 +754,31 @@
             50% { transform: translateY(-20px); }
         }
 
+        .current-player-banner {
+            background: linear-gradient(90deg, var(--or) 0%, #FFA500 100%);
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 30px;
+            text-align: center;
+            animation: slideDown 0.5s;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
         /* RESPONSIVE */
         @media (max-width: 968px) {
             .players-9pg { grid-template-columns: repeat(2, 1fr); }
             .faceaface-container { grid-template-columns: 1fr; }
             .themes-grid { grid-template-columns: 1fr; }
             .header h1 { font-size: 2rem; }
+            .answers-container { grid-template-columns: 1fr; }
+            .question-text-9pg { font-size: 1.5rem; }
         }
     </style>
 </head>
@@ -666,24 +826,35 @@
                 <div class="points-indicator" id="pointsValue">1 POINT</div>
                 <div class="question-text-9pg" id="question9PG">Préparez-vous...</div>
                 
-                <div class="timer-container" id="timer9PGContainer" style="display: none;">
+                <!-- Timer de lecture 5 secondes -->
+                <div class="timer-container" id="timerReadingContainer">
                     <div class="timer-bar-bg">
-                        <div class="timer-bar-fill" id="timerBarFill"></div>
-                        <div class="timer-text" id="timerText">5</div>
+                        <div class="timer-bar-fill" id="timerReadingFill"></div>
+                        <div class="timer-text" id="timerReadingText">5</div>
                     </div>
                 </div>
+
+                <!-- Timer de réponse 30 secondes -->
+                <div class="timer-30s-container" id="timerResponseContainer" style="display: none;">
+                    <div class="timer-30s" id="timer30s">30</div>
+                    <div style="font-size: 1.2rem; color: var(--or);">secondes pour répondre</div>
+                </div>
+
+                <!-- Zone des réponses QCM -->
+                <div class="answers-container" id="answersContainer" style="display: none;">
+                    <!-- Généré dynamiquement -->
+                </div>
                 
-                <div class="buzzer-instruction" id="buzzerInstr" style="display: none;">
-                    ⚡ BUZZEZ QUAND VOUS SAVEZ ! ⚡
+                <div class="buzzer-instruction" id="buzzerInstr">
+                    ⚡ CLIQUEZ SUR "JE VEUX RÉPONDRE" ! ⚡
                 </div>
             </div>
 
             <div class="controls">
                 <button class="btn btn-secondary" onclick="showMenu()">Abandonner</button>
                 <button class="btn" onclick="nextQuestion9PG()" id="btnNextQ">Question Suivante</button>
-                <button class="btn btn-success" onclick="correctAnswer9PG()" id="btnCorrect" style="display:none;">✓ Bonne Réponse</button>
-                <button class="btn btn-danger" onclick="wrongAnswer9PG()" id="btnWrong" style="display:none;">✗ Mauvaise Réponse</button>
-                <button class="btn btn-secondary" onclick="resetBuzzers9PG()" id="btnReset" style="display:none;">Réinitialiser</button>
+                <button class="btn btn-success" onclick="validateAnswer()" id="btnValidate" style="display:none;">Valider ma réponse</button>
+                <button class="btn btn-secondary" onclick="cancelBuzz()" id="btnCancel" style="display:none;">Annuler</button>
             </div>
         </div>
 
@@ -711,6 +882,7 @@
 
                 <div class="question-zone-9pg" style="min-height: 200px;">
                     <div class="question-text-9pg" id="question4S">Prêt ?</div>
+                    <div class="answers-container" id="answers4S" style="display: none;"></div>
                 </div>
 
                 <div class="controls">
@@ -749,6 +921,8 @@
 
                     <div class="timer-40s" id="timerFAF" style="font-size: 3rem;">20</div>
 
+                    <div class="answers-container" id="answersFAF" style="display: none; margin-top: 20px;"></div>
+
                     <div class="controls">
                         <button class="btn" onclick="nextIndice()">Indice Suivant</button>
                         <button class="btn btn-success" onclick="correctFAF()">Bonne Réponse</button>
@@ -783,9 +957,10 @@
                 <h2>Règles du Jeu</h2>
                 <div style="text-align: left; font-size: 1.2rem; line-height: 1.6;">
                     <h3 style="color: var(--or); margin: 20px 0;">Manche 1: 9 Points Gagnants</h3>
-                    <p>• 4 joueurs s'affrontent en répondant le plus vite possible</p>
+                    <p>• 4 joueurs s'affrontent</p>
                     <p>• Pendant la lecture, barre orange de 5→4→3→2→1 secondes</p>
-                    <p>• Buzzer dès que vous connaissez la réponse (même si question incomplète)</p>
+                    <p>• Cliquez sur "JE VEUX RÉPONDRE" dès que vous connaissez la réponse</p>
+                    <p>• Vous avez alors 30 secondes pour choisir parmi 4 réponses</p>
                     <p>• Les questions valent 1, 2 ou 3 points selon le nombre de qualifiés</p>
                     <p>• Les 3 premiers à atteindre 9 points sont qualifiés</p>
 
@@ -806,13 +981,13 @@
             </div>
         </div>
 
-        <!-- MODAL: BUZZER INFO -->
-        <div class="modal" id="modalBuzzer">
+        <!-- MODAL: PLAYER ANSWERING -->
+        <div class="modal" id="modalAnswering">
             <div class="modal-content">
-                <h2>🎯 BUZZER ACTIVÉ !</h2>
-                <div id="buzzerPlayerInfo" style="font-size: 2rem; margin: 30px 0;"></div>
-                <div style="font-size: 1.5rem; color: var(--or);">Vous avez la main !</div>
-                <button class="btn" onclick="closeModal('modalBuzzer')" style="margin-top: 30px;">Continuer</button>
+                <h2>🎯 JOUEUR EN RÉPONSE !</h2>
+                <div id="answeringPlayerInfo" style="font-size: 2rem; margin: 30px 0;"></div>
+                <div style="font-size: 1.5rem; color: var(--or);">30 secondes pour choisir la bonne réponse !</div>
+                <button class="btn" onclick="closeModal('modalAnswering')" style="margin-top: 30px;">Voir les options</button>
             </div>
         </div>
     </div>
