@@ -8,19 +8,14 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap');
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         :root {
             --bleu-france: #0055A4;
             --bleu-clair: #4A90E2;
             --or: #FFD700;
             --rouge: #E74C3C;
             --vert: #27AE60;
-            --noir: #1a1a1a;
         }
 
         body {
@@ -28,7 +23,6 @@
             background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             min-height: 100vh;
             color: white;
-            overflow-x: hidden;
         }
 
         .container {
@@ -37,176 +31,203 @@
             padding: 20px;
         }
 
-        /* HEADER */
         .header {
             text-align: center;
             padding: 20px;
             background: linear-gradient(90deg, var(--bleu-france) 0%, var(--bleu-clair) 100%);
             border-radius: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 3px solid var(--or);
         }
 
         .header h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             text-transform: uppercase;
-            letter-spacing: 3px;
-            text-shadow: 3px 3px 0 rgba(0,0,0,0.5);
             background: linear-gradient(to bottom, #fff 0%, var(--or) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .manche-indicator {
-            font-size: 1.5rem;
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* LOGIN */
+        .login-box {
+            max-width: 500px;
+            margin: 50px auto;
+            background: rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid var(--or);
+            text-align: center;
+        }
+
+        .login-box h2 {
             color: var(--or);
-            margin-top: 10px;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .input-group {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--or);
             font-weight: 700;
         }
 
-        /* SCREENS */
-        .screen {
+        /* ONLINE PLAYERS */
+        .online-panel {
+            position: fixed;
+            right: 20px;
+            top: 150px;
+            width: 250px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid var(--or);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .online-player {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 4px solid var(--vert);
+        }
+
+        .online-player.playing {
+            border-left-color: var(--or);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--vert);
+            margin-right: 8px;
+        }
+
+        .status-dot.playing {
+            background: var(--or);
+            animation: pulse 1s infinite;
+        }
+
+        /* ADMIN PANEL */
+        .admin-panel {
+            background: rgba(0,100,0,0.3);
+            border: 3px solid var(--vert);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .admin-tab {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .admin-tab.active {
+            background: var(--or);
+            color: black;
+        }
+
+        .tab-content {
             display: none;
         }
 
-        .screen.active {
+        .tab-content.active {
             display: block;
         }
 
-        /* MENU PRINCIPAL */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .menu-card {
-            background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            font-size: 1rem;
+            border-radius: 10px;
             border: 2px solid var(--or);
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            margin: 10px 0;
         }
 
-        .menu-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(255,215,0,0.3);
-            background: linear-gradient(145deg, rgba(255,215,0,0.2) 0%, rgba(255,215,0,0.1) 100%);
+        .format-help {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
         }
 
-        .menu-card h2 {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            color: var(--or);
-        }
-
-        /* 9 POINTS GAGNANTS */
-        .players-9pg {
+        /* GAME STYLES */
+        .players-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
-        .player-9pg {
+        .player-card {
             background: linear-gradient(145deg, rgba(0,85,164,0.8) 0%, rgba(0,50,100,0.9) 100%);
             border: 3px solid white;
             border-radius: 15px;
-            padding: 20px;
+            padding: 15px;
             text-align: center;
             position: relative;
-            transition: all 0.3s;
         }
 
-        .player-9pg.qualified {
-            background: linear-gradient(145deg, var(--or) 0%, #B8860B 100%);
-            border-color: #fff;
-            animation: pulse-gold 2s infinite;
+        .player-card.robot {
+            background: linear-gradient(145deg, #555 0%, #333 100%);
+            border-color: #888;
         }
 
-        .player-9pg.eliminated {
-            opacity: 0.3;
-            filter: grayscale(100%);
-        }
-
-        .player-9pg.buzzer-active {
-            box-shadow: 0 0 30px var(--or);
-            transform: scale(1.05);
+        .player-card.current {
             border-color: var(--or);
+            box-shadow: 0 0 20px var(--or);
         }
 
-        .player-9pg.can-buzz {
-            animation: pulse-blue 1s infinite;
-        }
-
-        @keyframes pulse-gold {
-            0%, 100% { box-shadow: 0 0 20px var(--or); }
-            50% { box-shadow: 0 0 40px var(--or), 0 0 60px var(--or); }
-        }
-
-        @keyframes pulse-blue {
-            0%, 100% { box-shadow: 0 0 10px var(--bleu-clair); }
-            50% { box-shadow: 0 0 25px var(--bleu-clair); }
-        }
-
-        .player-name {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .player-score-9pg {
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--or);
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .player-9pg.qualified .player-score-9pg {
-            color: white;
-        }
-
-        .qualification-status {
-            position: absolute;
-            top: -10px;
-            right: -10px;
-            background: var(--vert);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            display: none;
-        }
-
-        .player-9pg.qualified .qualification-status {
-            display: block;
+        .robot-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
         }
 
         .btn-buzz {
             background: linear-gradient(145deg, var(--rouge) 0%, #c0392b 100%);
             color: white;
             border: none;
-            padding: 15px 20px;
-            font-size: 1.1rem;
+            padding: 12px;
+            font-size: 1rem;
             font-weight: 700;
-            border-radius: 30px;
+            border-radius: 25px;
             cursor: pointer;
-            margin-top: 15px;
             width: 100%;
+            margin-top: 10px;
             transition: all 0.3s;
-            text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .btn-buzz:hover:not(:disabled) {
             transform: scale(1.05);
-            box-shadow: 0 0 20px var(--rouge);
+            box-shadow: 0 0 15px var(--rouge);
         }
 
         .btn-buzz:disabled {
@@ -215,398 +236,102 @@
             opacity: 0.5;
         }
 
-        .btn-buzz.active {
-            background: linear-gradient(145deg, var(--vert) 0%, #229954 100%);
-            animation: pulse-green 1s infinite;
-        }
-
-        @keyframes pulse-green {
-            0%, 100% { box-shadow: 0 0 10px var(--vert); }
-            50% { box-shadow: 0 0 25px var(--vert); }
-        }
-
-        /* ZONE QUESTION 9PG */
-        .question-zone-9pg {
-            background: linear-gradient(145deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.8) 100%);
+        .question-zone {
+            background: rgba(0,0,0,0.6);
             border: 3px solid var(--or);
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
             text-align: center;
-            min-height: 300px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            overflow: hidden;
+            min-height: 250px;
         }
 
-        .question-text-9pg {
-            font-size: 2.2rem;
-            line-height: 1.4;
-            margin-bottom: 30px;
-            font-weight: 700;
-        }
-
-        .points-indicator {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--or);
-            color: black;
-            padding: 10px 20px;
+        .timer-reading {
+            width: 100%;
+            height: 60px;
+            background: rgba(255,255,255,0.2);
             border-radius: 30px;
-            font-weight: 900;
-            font-size: 1.5rem;
-        }
-
-        /* TIMER ORANGE 5-4-3-2-1 */
-        .timer-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 30px auto;
-            position: relative;
-        }
-
-        .timer-bar-bg {
-            width: 100%;
-            height: 80px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 40px;
             overflow: hidden;
-            border: 4px solid white;
+            border: 3px solid white;
+            margin: 20px 0;
             position: relative;
         }
 
-        .timer-bar-fill {
+        .timer-reading-fill {
             height: 100%;
-            background: linear-gradient(90deg, #ff9500 0%, #ff5e00 50%, #ff0000 100%);
+            background: linear-gradient(90deg, #ff9500 0%, #ff5e00 100%);
             width: 100%;
             transition: width 0.1s linear;
-            border-radius: 40px;
-            box-shadow: 0 0 20px rgba(255, 94, 0, 0.6);
         }
 
-        .timer-text {
+        .timer-reading-text {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 3rem;
+            font-size: 2rem;
             font-weight: 900;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
-            z-index: 10;
         }
 
-        .buzzer-instruction {
-            margin-top: 20px;
-            font-size: 1.5rem;
+        .timer-response {
+            font-size: 4rem;
+            font-weight: 900;
             color: var(--or);
-            font-weight: 700;
-            animation: blink 1s infinite;
+            margin: 20px 0;
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        /* OPTIONS DE REPONSE (QCM) */
-        .answers-container {
+        .answers-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 30px;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            gap: 15px;
+            margin-top: 20px;
         }
 
-        .answer-option {
-            background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        .answer-btn {
+            background: rgba(255,255,255,0.1);
             border: 3px solid white;
+            padding: 20px;
             border-radius: 15px;
-            padding: 25px;
-            font-size: 1.3rem;
             cursor: pointer;
+            font-size: 1.2rem;
             transition: all 0.3s;
-            text-align: center;
-            font-weight: 700;
+            text-align: left;
         }
 
-        .answer-option:hover:not(.disabled) {
-            background: linear-gradient(145deg, var(--bleu-clair) 0%, var(--bleu-france) 100%);
+        .answer-btn:hover:not(.disabled) {
+            background: var(--bleu-clair);
             transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        .answer-option.selected {
-            background: linear-gradient(145deg, var(--or) 0%, #FFA500 100%);
-            border-color: white;
-            transform: scale(1.05);
+        .answer-btn.selected {
+            background: var(--or);
+            color: black;
         }
 
-        .answer-option.correct {
-            background: linear-gradient(145deg, var(--vert) 0%, #229954 100%) !important;
-            border-color: #90EE90;
-            animation: pulse-correct 0.5s;
+        .answer-btn.correct {
+            background: var(--vert) !important;
         }
 
-        .answer-option.wrong {
-            background: linear-gradient(145deg, var(--rouge) 0%, #922b21 100%) !important;
-            border-color: #ff9999;
+        .answer-btn.wrong {
+            background: var(--rouge) !important;
             opacity: 0.7;
         }
 
-        .answer-option.disabled {
+        .answer-btn.disabled {
             cursor: not-allowed;
-            opacity: 0.6;
-        }
-
-        @keyframes pulse-correct {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            pointer-events: none;
         }
 
         .answer-label {
             display: inline-block;
             background: var(--or);
             color: black;
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
-            line-height: 40px;
+            text-align: center;
+            line-height: 35px;
             font-weight: 900;
             margin-right: 15px;
-            font-size: 1.2rem;
-        }
-
-        /* TIMER 30 SECONDES */
-        .timer-30s-container {
-            margin: 30px 0;
-            text-align: center;
-        }
-
-        .timer-30s {
-            font-size: 5rem;
-            font-weight: 900;
-            color: var(--or);
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-            font-family: 'Courier New', monospace;
-        }
-
-        .timer-30s.warning {
-            color: var(--rouge);
-            animation: pulse-timer 0.5s infinite;
-        }
-
-        @keyframes pulse-timer {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* 4 A LA SUITE */
-        .themes-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-            margin: 40px 0;
-        }
-
-        .theme-card {
-            background: linear-gradient(145deg, var(--bleu-france) 0%, #003d7a 100%);
-            border: 3px solid white;
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .theme-card:hover:not(.disabled) {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px var(--or);
-            border-color: var(--or);
-        }
-
-        .theme-card.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-            filter: grayscale(100%);
-        }
-
-        .theme-card.selected {
-            background: linear-gradient(145deg, var(--or) 0%, #B8860B 100%);
-            animation: pulse 1s infinite;
-        }
-
-        .theme-title {
-            font-size: 2rem;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .theme-mystere {
-            background: linear-gradient(145deg, #8B008B 0%, #4B0082 100%) !important;
-        }
-
-        .game-4suite {
-            background: rgba(0,0,0,0.5);
-            border-radius: 20px;
-            padding: 30px;
-            margin-top: 20px;
-        }
-
-        .serie-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .serie-dot {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
-            border: 3px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            font-weight: 900;
-            transition: all 0.3s;
-        }
-
-        .serie-dot.active {
-            background: var(--vert);
-            box-shadow: 0 0 20px var(--vert);
-        }
-
-        .serie-dot.failed {
-            background: var(--rouge);
-        }
-
-        .timer-40s {
-            font-size: 4rem;
-            font-weight: 900;
-            color: var(--or);
-            text-align: center;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-        }
-
-        /* FACE A FACE */
-        .faceaface-container {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 30px;
-            align-items: start;
-        }
-
-        .player-faf {
-            background: linear-gradient(145deg, rgba(0,85,164,0.8) 0%, rgba(0,50,100,0.9) 100%);
-            border: 3px solid white;
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .player-faf.active {
-            border-color: var(--or);
-            box-shadow: 0 0 30px var(--or);
-        }
-
-        .player-faf.has-hand {
-            background: linear-gradient(145deg, var(--or) 0%, #B8860B 100%);
-        }
-
-        .score-faf {
-            font-size: 4rem;
-            font-weight: 900;
-            color: var(--or);
-            margin: 20px 0;
-        }
-
-        .main-indicator {
-            font-size: 1.2rem;
-            margin-top: 10px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .zones-display {
-            background: rgba(0,0,0,0.7);
-            border-radius: 20px;
-            padding: 30px;
-            text-align: center;
-        }
-
-        .zones-bar {
-            display: flex;
-            height: 100px;
-            border-radius: 50px;
-            overflow: hidden;
-            margin: 20px 0;
-            border: 4px solid white;
-            position: relative;
-        }
-
-        .zone {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            transition: all 0.3s;
-        }
-
-        .zone-4 { background: linear-gradient(90deg, #00c853 0%, #64dd17 100%); }
-        .zone-3 { background: linear-gradient(90deg, #ffd600 0%, #ffab00 100%); color: black; }
-        .zone-2 { background: linear-gradient(90deg, #ff6d00 0%, #ff3d00 100%); }
-        .zone-1 { background: linear-gradient(90deg, #dd2c00 0%, #b71c1c 100%); }
-
-        .zone.active {
-            box-shadow: inset 0 0 30px rgba(255,255,255,0.5);
-            transform: scale(1.05);
-            z-index: 10;
-        }
-
-        .indice-reveal {
-            font-size: 1.8rem;
-            margin: 20px 0;
-            padding: 20px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 15px;
-            min-height: 80px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .indice-number {
-            display: inline-block;
-            background: var(--or);
-            color: black;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            line-height: 40px;
-            font-weight: 900;
-            margin-right: 15px;
-        }
-
-        /* CONTROLES */
-        .controls {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 30px;
         }
 
         .btn {
@@ -614,36 +339,42 @@
             color: black;
             border: none;
             padding: 15px 30px;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 700;
             border-radius: 30px;
             cursor: pointer;
+            margin: 5px;
             transition: all 0.3s;
-            text-transform: uppercase;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(255,215,0,0.4);
+            box-shadow: 0 5px 15px rgba(255,215,0,0.4);
         }
 
         .btn-secondary {
-            background: linear-gradient(145deg, #34495e 0%, #2c3e50 100%);
+            background: linear-gradient(145deg, #555 0%, #333 100%);
             color: white;
         }
 
         .btn-success {
-            background: linear-gradient(145deg, var(--vert) 0%, #229954 100%);
+            background: var(--vert);
             color: white;
         }
 
         .btn-danger {
-            background: linear-gradient(145deg, var(--rouge) 0%, #c0392b 100%);
+            background: var(--rouge);
             color: white;
         }
 
-        /* MODALS */
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -665,120 +396,62 @@
             background: linear-gradient(145deg, var(--bleu-france) 0%, #002855 100%);
             border: 4px solid var(--or);
             border-radius: 30px;
-            padding: 50px;
-            max-width: 800px;
+            padding: 40px;
+            max-width: 600px;
             text-align: center;
-            animation: slideIn 0.5s;
         }
 
-        @keyframes slideIn {
-            from { transform: translateY(-100px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal h2 {
-            font-size: 3rem;
-            color: var(--or);
-            margin-bottom: 30px;
-        }
-
-        /* CONFIGURATION JOUEURS */
-        .setup-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-            margin: 30px 0;
-        }
-
-        .player-setup {
+        .waiting-room {
             background: rgba(255,255,255,0.1);
-            padding: 30px;
             border-radius: 20px;
-            border: 2px solid white;
+            padding: 30px;
+            margin: 20px 0;
         }
 
-        .player-setup h3 {
-            color: var(--or);
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 15px;
-            font-size: 1.2rem;
-            border-radius: 10px;
-            border: 2px solid white;
+        .player-slot {
             background: rgba(0,0,0,0.3);
-            color: white;
+            padding: 20px;
             margin: 10px 0;
+            border-radius: 15px;
+            border: 2px dashed rgba(255,255,255,0.3);
         }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--or);
+        .player-slot.filled {
+            border-style: solid;
+            border-color: var(--vert);
+            background: rgba(0,255,0,0.1);
         }
 
-        .buzzer-key {
-            font-size: 3rem;
-            font-weight: 900;
-            color: var(--or);
-            text-align: center;
-            margin: 10px 0;
+        .player-slot.robot {
+            border-color: #888;
+            background: rgba(100,100,100,0.2);
         }
 
-        /* ANIMATIONS */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         .confetti {
             position: fixed;
             width: 15px;
             height: 15px;
             background: var(--or);
-            animation: confetti-fall 3s linear forwards;
+            animation: fall 3s linear forwards;
             z-index: 999;
         }
 
-        @keyframes confetti-fall {
+        @keyframes fall {
             to {
                 transform: translateY(100vh) rotate(720deg);
                 opacity: 0;
             }
         }
 
-        .winner-crown {
-            font-size: 5rem;
-            animation: bounce 1s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
-        }
-
-        .current-player-banner {
-            background: linear-gradient(90deg, var(--or) 0%, #FFA500 100%);
-            color: black;
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 1.8rem;
-            font-weight: 900;
-            margin-bottom: 30px;
-            text-align: center;
-            animation: slideDown 0.5s;
-        }
-
-        @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* RESPONSIVE */
         @media (max-width: 968px) {
-            .players-9pg { grid-template-columns: repeat(2, 1fr); }
-            .faceaface-container { grid-template-columns: 1fr; }
-            .themes-grid { grid-template-columns: 1fr; }
-            .header h1 { font-size: 2rem; }
-            .answers-container { grid-template-columns: 1fr; }
-            .question-text-9pg { font-size: 1.5rem; }
+            .players-grid { grid-template-columns: repeat(2, 1fr); }
+            .online-panel { display: none; }
+            .answers-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -787,207 +460,174 @@
         <!-- HEADER -->
         <div class="header">
             <h1>🏆 Questions pour un Champion</h1>
-            <div class="manche-indicator" id="mancheIndicator">Menu Principal</div>
+            <div id="userInfo" style="margin-top: 10px; color: var(--or);"></div>
         </div>
 
-        <!-- SCREEN: MENU -->
-        <div class="screen active" id="screenMenu">
-            <div class="menu-grid">
-                <div class="menu-card" onclick="showSetup()">
-                    <h2>🎮 Nouvelle Partie</h2>
-                    <p>4 joueurs - 3 manches - 1 champion</p>
+        <!-- ONLINE PLAYERS PANEL -->
+        <div class="online-panel" id="onlinePanel" style="display: none;">
+            <h3 style="color: var(--or); margin-bottom: 15px; text-align: center;">🌐 En Ligne</h3>
+            <div id="onlineList"></div>
+        </div>
+
+        <!-- SCREEN: LOGIN -->
+        <div class="screen active" id="screenLogin">
+            <div class="login-box">
+                <h2>Connexion</h2>
+                <div class="input-group">
+                    <label>Nom</label>
+                    <input type="text" id="loginNom" placeholder="Votre nom">
                 </div>
-                <div class="menu-card" onclick="showRules()">
-                    <h2>📋 Règles du Jeu</h2>
-                    <p>9 Points Gagnants - 4 à la Suite - Face-à-face</p>
+                <div class="input-group">
+                    <label>Prénom</label>
+                    <input type="text" id="loginPrenom" placeholder="Votre prénom">
                 </div>
-                <div class="menu-card" onclick="showQuestionsAdmin()">
-                    <h2>⚙️ Gestion Questions</h2>
-                    <p>Ajouter ou modifier les questions</p>
-                </div>
+                <button class="btn" onclick="login()" style="width: 100%; margin-top: 20px;">Se Connecter</button>
+                <div id="loginError" style="color: var(--rouge); margin-top: 15px;"></div>
             </div>
         </div>
 
-        <!-- SCREEN: SETUP -->
-        <div class="screen" id="screenSetup">
-            <h2 style="text-align: center; font-size: 2.5rem; margin-bottom: 30px; color: var(--or);">Configuration des Joueurs</h2>
-            <div class="setup-grid" id="setupGrid"></div>
-            <div class="controls">
-                <button class="btn btn-secondary" onclick="showMenu()">Retour</button>
-                <button class="btn" onclick="startGame()">Commencer la Partie</button>
-            </div>
-        </div>
-
-        <!-- SCREEN: 9 POINTS GAGNANTS -->
-        <div class="screen" id="screen9PG">
-            <div class="players-9pg" id="players9PG"></div>
-            
-            <div class="question-zone-9pg">
-                <div class="points-indicator" id="pointsValue">1 POINT</div>
-                <div class="question-text-9pg" id="question9PG">Préparez-vous...</div>
+        <!-- SCREEN: ADMIN -->
+        <div class="screen" id="screenAdmin">
+            <div class="admin-panel">
+                <h2 style="color: var(--vert); margin-bottom: 20px;">👑 Panel Administrateur - Bienvenue Sossou Kouamé</h2>
                 
-                <!-- Timer de lecture 5 secondes -->
-                <div class="timer-container" id="timerReadingContainer">
-                    <div class="timer-bar-bg">
-                        <div class="timer-bar-fill" id="timerReadingFill"></div>
-                        <div class="timer-text" id="timerReadingText">5</div>
+                <div class="admin-tabs">
+                    <button class="admin-tab active" onclick="showAdminTab('text')">Ajouter par Texte</button>
+                    <button class="admin-tab" onclick="showAdminTab('form')">Ajouter par Formulaire</button>
+                    <button class="admin-tab" onclick="showAdminTab('view')">Voir Questions</button>
+                </div>
+
+                <!-- Tab: Text -->
+                <div class="tab-content active" id="tabText">
+                    <h3>Ajouter des questions en masse (format texte)</h3>
+                    <div class="format-help">
+                        Format: QUESTION | BONNE_RÉPONSE | MAUVAISE_RÉPONSE_1 | MAUVAISE_RÉPONSE_2 | MAUVAISE_RÉPONSE_3 | CATÉGORIE | POINTS<br><br>
+                        Exemple:<br>
+                        Quelle est la capitale de la France ? | Paris | Londres | Berlin | Madrid | Géographie | 1<br>
+                        Qui a peint la Joconde ? | Léonard de Vinci | Michel-Ange | Raphaël | Van Gogh | Arts | 2
+                    </div>
+                    <textarea id="bulkQuestions" placeholder="Collez vos questions ici..."></textarea>
+                    <div class="controls">
+                        <button class="btn btn-success" onclick="addBulkQuestions()">Ajouter les Questions</button>
+                        <button class="btn btn-secondary" onclick="showMenu()">Retour au Menu</button>
                     </div>
                 </div>
 
-                <!-- Timer de réponse 30 secondes -->
-                <div class="timer-30s-container" id="timerResponseContainer" style="display: none;">
-                    <div class="timer-30s" id="timer30s">30</div>
-                    <div style="font-size: 1.2rem; color: var(--or);">secondes pour répondre</div>
+                <!-- Tab: Form -->
+                <div class="tab-content" id="tabForm">
+                    <h3>Ajouter une question</h3>
+                    <div class="input-group">
+                        <label>Question</label>
+                        <input type="text" id="qText" style="width: 100%; padding: 10px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Bonne réponse</label>
+                        <input type="text" id="qCorrect" style="width: 100%; padding: 10px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Mauvaise réponse 1</label>
+                        <input type="text" id="qWrong1" style="width: 100%; padding: 10px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Mauvaise réponse 2</label>
+                        <input type="text" id="qWrong2" style="width: 100%; padding: 10px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Mauvaise réponse 3</label>
+                        <input type="text" id="qWrong3" style="width: 100%; padding: 10px;">
+                    </div>
+                    <div class="input-group">
+                        <label>Catégorie</label>
+                        <select id="qCategory" style="width: 100%; padding: 10px;">
+                            <option value="9PG">9 Points Gagnants</option>
+                            <option value="4SUITE">4 à la Suite</option>
+                            <option value="FAF">Face-à-Face</option>
+                        </select>
+                    </div>
+                    <div class="controls">
+                        <button class="btn btn-success" onclick="addSingleQuestion()">Ajouter</button>
+                        <button class="btn btn-secondary" onclick="showMenu()">Retour</button>
+                    </div>
                 </div>
 
-                <!-- Zone des réponses QCM -->
-                <div class="answers-container" id="answersContainer" style="display: none;">
-                    <!-- Généré dynamiquement -->
+                <!-- Tab: View -->
+                <div class="tab-content" id="tabView">
+                    <h3>Questions existantes</h3>
+                    <div id="questionsList" style="max-height: 400px; overflow-y: auto; text-align: left;"></div>
+                    <div class="controls">
+                        <button class="btn btn-secondary" onclick="showMenu()">Retour</button>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- SCREEN: MENU -->
+        <div class="screen" id="screenMenu">
+            <div style="text-align: center; margin: 30px 0;">
+                <h2 style="color: var(--or); font-size: 2rem;">Bienvenue <span id="menuUserName"></span> !</h2>
+            </div>
+            
+            <div class="waiting-room">
+                <h3 style="color: var(--or); margin-bottom: 20px;">🎮 Salon d'Attente</h3>
+                <div id="waitingSlots"></div>
+                <div class="controls" style="margin-top: 20px;">
+                    <button class="btn" onclick="startGameWithRobots()">Jouer avec des Robots</button>
+                    <button class="btn btn-secondary" onclick="waitForPlayers()">Attendre d'autres joueurs</button>
+                    <button class="btn btn-success" onclick="startGameIfReady()">Démarrer la partie</button>
+                </div>
+            </div>
+
+            <div class="controls" style="margin-top: 30px;">
+                <button class="btn" onclick="showRules()">📋 Règles</button>
+                <button class="btn btn-secondary" onclick="logout()">Déconnexion</button>
+            </div>
+        </div>
+
+        <!-- SCREEN: GAME 9PG -->
+        <div class="screen" id="screen9PG">
+            <div class="players-grid" id="players9PG"></div>
+            
+            <div class="question-zone">
+                <div style="font-size: 1.2rem; color: var(--or); margin-bottom: 10px;" id="pointsDisplay">1 POINT</div>
+                <div style="font-size: 1.8rem; font-weight: 700; margin-bottom: 20px;" id="questionText">Préparez-vous...</div>
                 
-                <div class="buzzer-instruction" id="buzzerInstr">
+                <div class="timer-reading" id="readingTimer">
+                    <div class="timer-reading-fill" id="readingFill"></div>
+                    <div class="timer-reading-text" id="readingText">5</div>
+                </div>
+
+                <div class="timer-response" id="responseTimer" style="display: none;">30</div>
+                
+                <div class="answers-grid" id="answersContainer" style="display: none;"></div>
+                
+                <div id="buzzerMsg" style="color: var(--or); font-size: 1.3rem; margin-top: 15px;">
                     ⚡ CLIQUEZ SUR "JE VEUX RÉPONDRE" ! ⚡
                 </div>
             </div>
 
             <div class="controls">
-                <button class="btn btn-secondary" onclick="showMenu()">Abandonner</button>
-                <button class="btn" onclick="nextQuestion9PG()" id="btnNextQ">Question Suivante</button>
-                <button class="btn btn-success" onclick="validateAnswer()" id="btnValidate" style="display:none;">Valider ma réponse</button>
-                <button class="btn btn-secondary" onclick="cancelBuzz()" id="btnCancel" style="display:none;">Annuler</button>
-            </div>
-        </div>
-
-        <!-- SCREEN: 4 A LA SUITE -->
-        <div class="screen" id="screen4Suite">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h2 id="player4SuiteTurn" style="color: var(--or); font-size: 2rem;"></h2>
-            </div>
-
-            <div class="themes-grid" id="themesGrid"></div>
-
-            <div class="game-4suite" id="game4Suite" style="display: none;">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h3 style="color: var(--or); font-size: 1.8rem;">Thème: <span id="currentTheme4S"></span></h3>
-                </div>
-                
-                <div class="serie-indicator" id="serieIndicator">
-                    <div class="serie-dot">1</div>
-                    <div class="serie-dot">2</div>
-                    <div class="serie-dot">3</div>
-                    <div class="serie-dot">4</div>
-                </div>
-
-                <div class="timer-40s" id="timer40s">40</div>
-
-                <div class="question-zone-9pg" style="min-height: 200px;">
-                    <div class="question-text-9pg" id="question4S">Prêt ?</div>
-                    <div class="answers-container" id="answers4S" style="display: none;"></div>
-                </div>
-
-                <div class="controls">
-                    <button class="btn btn-success" onclick="correct4S()">Bonne Réponse (+1)</button>
-                    <button class="btn btn-danger" onclick="wrong4S()">Erreur / Pass (Série perdue)</button>
-                    <button class="btn" onclick="startTimer4S()" id="btnStart4S">Démarrer le Timer</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- SCREEN: FACE A FACE -->
-        <div class="screen" id="screenFaceAFace">
-            <div class="faceaface-container">
-                <div class="player-faf" id="fafPlayer1">
-                    <h3 id="fafName1">Joueur 1</h3>
-                    <div class="score-faf" id="fafScore1">0</div>
-                    <div class="main-indicator" id="fafMain1"></div>
-                </div>
-
-                <div class="zones-display">
-                    <h3 style="color: var(--or); margin-bottom: 20px; font-size: 1.5rem;">FACE À FACE - 12 POINTS</h3>
-                    
-                    <div class="zones-bar" id="zonesBar">
-                        <div class="zone zone-4" data-points="4">4</div>
-                        <div class="zone zone-3" data-points="3">3</div>
-                        <div class="zone zone-2" data-points="2">2</div>
-                        <div class="zone zone-1" data-points="1">1</div>
-                    </div>
-
-                    <div style="margin: 20px 0;">
-                        <button class="btn" onclick="chooseHand(1)" id="btnTakeHand">Prendre la main</button>
-                        <button class="btn btn-secondary" onclick="chooseHand(0)" id="btnLeaveHand">Laisser la main</button>
-                    </div>
-
-                    <div class="indice-reveal" id="indiceReveal">En attente du choix...</div>
-
-                    <div class="timer-40s" id="timerFAF" style="font-size: 3rem;">20</div>
-
-                    <div class="answers-container" id="answersFAF" style="display: none; margin-top: 20px;"></div>
-
-                    <div class="controls">
-                        <button class="btn" onclick="nextIndice()">Indice Suivant</button>
-                        <button class="btn btn-success" onclick="correctFAF()">Bonne Réponse</button>
-                        <button class="btn btn-danger" onclick="wrongFAF()">Mauvaise Réponse</button>
-                    </div>
-                </div>
-
-                <div class="player-faf" id="fafPlayer2">
-                    <h3 id="fafName2">Joueur 2</h3>
-                    <div class="score-faf" id="fafScore2">0</div>
-                    <div class="main-indicator" id="fafMain2"></div>
-                </div>
+                <button class="btn btn-secondary" onclick="backToMenu()">Quitter</button>
+                <button class="btn" onclick="nextQuestion9PG()" id="btnNextQ" style="display: none;">Question Suivante</button>
+                <button class="btn btn-success" onclick="validateAnswer()" id="btnValidate" style="display: none;">Valider</button>
             </div>
         </div>
 
         <!-- SCREEN: WINNER -->
         <div class="screen" id="screenWinner">
             <div style="text-align: center; padding: 50px;">
-                <div class="winner-crown">👑</div>
+                <div style="font-size: 5rem; animation: pulse 1s infinite;">👑</div>
                 <h2 style="font-size: 3rem; color: var(--or); margin: 30px 0;">CHAMPION DU JOUR</h2>
-                <div id="winnerName" style="font-size: 4rem; font-weight: 900; margin-bottom: 30px;"></div>
-                <div style="font-size: 2rem; color: var(--or);">Félicitations ! Vous remportez la partie !</div>
-                <div class="controls" style="margin-top: 50px;">
-                    <button class="btn" onclick="location.reload()">Nouvelle Partie</button>
-                </div>
+                <div id="winnerName" style="font-size: 3rem; font-weight: 900; margin-bottom: 30px;"></div>
+                <button class="btn" onclick="location.reload()" style="font-size: 1.3rem;">Nouvelle Partie</button>
             </div>
         </div>
 
-        <!-- MODAL: RULES -->
-        <div class="modal" id="modalRules">
+        <!-- MODAL -->
+        <div class="modal" id="modal">
             <div class="modal-content">
-                <h2>Règles du Jeu</h2>
-                <div style="text-align: left; font-size: 1.2rem; line-height: 1.6;">
-                    <h3 style="color: var(--or); margin: 20px 0;">Manche 1: 9 Points Gagnants</h3>
-                    <p>• 4 joueurs s'affrontent</p>
-                    <p>• Pendant la lecture, barre orange de 5→4→3→2→1 secondes</p>
-                    <p>• Cliquez sur "JE VEUX RÉPONDRE" dès que vous connaissez la réponse</p>
-                    <p>• Vous avez alors 30 secondes pour choisir parmi 4 réponses</p>
-                    <p>• Les questions valent 1, 2 ou 3 points selon le nombre de qualifiés</p>
-                    <p>• Les 3 premiers à atteindre 9 points sont qualifiés</p>
-
-                    <h3 style="color: var(--or); margin: 20px 0;">Manche 2: 4 à la Suite</h3>
-                    <p>• Les 3 qualifiés choisissent un thème chacun leur tour</p>
-                    <p>• 40 secondes pour répondre à un maximum de questions</p>
-                    <p>• Objectif: 4 bonnes réponses consécutives</p>
-                    <p>• Si erreur ou passe, la série retombe à 0</p>
-                    <p>• Les 2 meilleurs scores accèdent au Face-à-face</p>
-
-                    <h3 style="color: var(--or); margin: 20px 0;">Manche 3: Face-à-face</h3>
-                    <p>• Définitions avec indices successifs sur 20 secondes</p>
-                    <p>• 4 points si réponse dans les 8 premières secondes</p>
-                    <p>• 3 points (8-14s), 2 points (14-18s), 1 point (18-20s)</p>
-                    <p>• Le premier à 12 points remporte le jeu</p>
-                </div>
-                <button class="btn" onclick="closeModal('modalRules')" style="margin-top: 30px;">Fermer</button>
-            </div>
-        </div>
-
-        <!-- MODAL: PLAYER ANSWERING -->
-        <div class="modal" id="modalAnswering">
-            <div class="modal-content">
-                <h2>🎯 JOUEUR EN RÉPONSE !</h2>
-                <div id="answeringPlayerInfo" style="font-size: 2rem; margin: 30px 0;"></div>
-                <div style="font-size: 1.5rem; color: var(--or);">30 secondes pour choisir la bonne réponse !</div>
-                <button class="btn" onclick="closeModal('modalAnswering')" style="margin-top: 30px;">Voir les options</button>
+                <h2 id="modalTitle">Titre</h2>
+                <div id="modalBody" style="font-size: 1.3rem; margin: 20px 0;"></div>
+                <button class="btn" onclick="closeModal()">Fermer</button>
             </div>
         </div>
     </div>
