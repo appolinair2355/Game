@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -11,6 +10,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🏆 Questions pour un Champion démarré sur le port ${PORT}`);
-    console.log(`📺 Ouvrez http://localhost:${PORT} pour jouer`);
+    console.log(`🏆 Questions pour un Champion QCM démarré sur le port ${PORT}`);
 });
