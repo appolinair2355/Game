@@ -1,12 +1,12 @@
 {
   "name": "questions-pour-un-champion",
-  "version": "3.0.0",
-  "description": "Jeu Questions pour un Champion - Version QCM avec 30 secondes pour répondre",
+  "version": "4.0.0",
+  "description": "Questions pour un Champion - Multi-joueur avec robots et admin",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["jeu", "quiz", "champion", "tv5", "qcm"],
+  "keywords": ["jeu", "quiz", "multiplayer", "robots", "admin"],
   "author": "",
   "license": "MIT",
   "dependencies": {
