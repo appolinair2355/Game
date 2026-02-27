@@ -10,5 +10,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🏆 Questions pour un Champion QCM démarré sur le port ${PORT}`);
+    console.log(`🏆 Questions pour un Champion Multi-joueur démarré sur le port ${PORT}`);
+    console.log(`🤖 Mode robots activé`);
+    console.log(`👑 Admin: Sossou Kouamé`);
 });
