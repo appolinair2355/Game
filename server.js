@@ -10,7 +10,8 @@ app.get('/', (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🏆 Questions pour un Champion Multi-joueur démarré sur le port ${PORT}`);
-    console.log(`🤖 Mode robots activé`);
-    console.log(`👑 Admin: Sossou Kouamé`);
+    console.log(`🏆 Questions pour un Champion TV démarré sur le port ${PORT}`);
+    console.log(`📸 Photos de profil activées`);
+    console.log(`🎙️ Voix homme/femme sélectionnable`);
+    console.log(`🎯 Zones Face-à-face 4-3-2-1 exactes`);
 });
