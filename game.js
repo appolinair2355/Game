@@ -809,4 +809,146 @@ function startFAFTimer() {
         const btn = document.createElement('div');
         btn.className = 'answer-btn';
         btn.innerHTML = `<span class="answer-letter">${letters[idx]}</span>${opt}`;
-        btn.onclick =
+        btn.onclick = function() {
+            clearInterval(State.game.timers.faf);
+            if (opt === q.reponse) {
+                this.classList.add('correct');
+                correctFAF();
+            } else {
+                this.classList.add('wrong');
+                wrongFAF();
+            }
+        };
+        container.appendChild(btn);
+    });
+    
+    // Timer avec défilement zones
+    State.game.timers.faf = setInterval(() => {
+        State.game.fafTimeLeft--;
+        document.getElementById('timerFAF').textContent = State.game.fafTimeLeft;
+        
+        // Zones: 4pts (20-16), 3pts (15-10), 2pts (9-5), 1pt (4-0)
+        document.querySelectorAll('.zone').forEach(z => z.classList.remove('active'));
+        if (State.game.fafTimeLeft >= 16) document.getElementById('zone4').classList.add('active');
+        else if (State.game.fafTimeLeft >= 10) document.getElementById('zone3').classList.add('active');
+        else if (State.game.fafTimeLeft >= 5) document.getElementById('zone2').classList.add('active');
+        else document.getElementById('zone1').classList.add('active');
+        
+        if (State.game.fafTimeLeft <= 5) {
+            document.getElementById('timerFAF').classList.add('warning');
+        }
+        
+        // Révéler indices
+        if (State.game.fafTimeLeft === 16 && State.game.indiceIndex === 0) nextIndice();
+        if (State.game.fafTimeLeft === 12 && State.game.indiceIndex === 1) nextIndice();
+        if (State.game.fafTimeLeft === 8 && State.game.indiceIndex === 2) nextIndice();
+        
+        if (State.game.fafTimeLeft <= 0) {
+            clearInterval(State.game.timers.faf);
+            wrongFAF();
+        }
+    }, 1000);
+}
+
+function nextIndice() {
+    const q = State.game.currentFAFQuestion;
+    if (State.game.indiceIndex < q.indices.length) {
+        const div = document.createElement('div');
+        div.className = 'indice-item';
+        div.textContent = (State.game.indiceIndex + 1) + '. ' + q.indices[State.game.indiceIndex];
+        document.getElementById('indicesContainer').appendChild(div);
+        
+        speak('Indice ' + (State.game.indiceIndex + 1));
+        State.game.indiceIndex++;
+    }
+}
+
+function correctFAF() {
+    // Calculer points selon zone
+    let points = 1;
+    if (State.game.fafTimeLeft >= 16) points = 4;
+    else if (State.game.fafTimeLeft >= 10) points = 3;
+    else if (State.game.fafTimeLeft >= 5) points = 2;
+    
+    const currentPlayerIdx = State.game.fafFinalists[State.game.fafCurrentPlayer];
+    State.game.fafScores[currentPlayerIdx] += points;
+    
+    speak(`Bonne réponse ! ${points} points !`);
+    
+    // Changer joueur
+    State.game.fafCurrentPlayer = 1 - State.game.fafCurrentPlayer;
+    
+    renderPupitresFAF();
+    setTimeout(nextFAFQuestion, 2000);
+}
+
+function wrongFAF() {
+    speak('Mauvaise réponse !');
+    State.game.fafCurrentPlayer = 1 - State.game.fafCurrentPlayer;
+    renderPupitresFAF();
+    setTimeout(nextFAFQuestion, 2000);
+}
+
+function endGame(winnerIdx) {
+    showScreen('screenWinner');
+    
+    const isPlayer = (winnerIdx === 0);
+    const winner = isPlayer ? State.user : State.game.robots[winnerIdx - 1];
+    
+    document.getElementById('winnerName').textContent = winner.prenom + ' ' + winner.nom;
+    document.getElementById('winnerPhoto').innerHTML = isPlayer ? 
+        `<img src="${State.userPhoto}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+        `<div style="font-size: 8rem; text-align: center; line-height: 200px;">🤖</div>`;
+    
+    if (isPlayer) {
+        speak('Félicitations ! Vous êtes le champion du jour !');
+        for (let i = 0; i < 100; i++) setTimeout(createConfetti, i * 50);
+    } else {
+        speak('Le robot remporte cette partie. Retentez votre chance !');
+    }
+}
+
+// Utilitaires
+function clearTimers() {
+    Object.values(State.game.timers).forEach(t => clearInterval(t));
+}
+
+function createConfetti() {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.background = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#F9CA24'][Math.floor(Math.random() * 5)];
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 3000);
+}
+
+function showRules() {
+    document.getElementById('modalTitle').textContent = '📋 RÈGLES DU JEU';
+    document.getElementById('modalBody').innerHTML = `
+        <div style="text-align: left; line-height: 1.8;">
+            <h3 style="color: var(--or);">9 Points Gagnants</h3>
+            <p>• 4 joueurs avec photos sur pupitres</p>
+            <p>• Barre de 9 cases orange à remplir</p>
+            <p>• Buzzer "Je veux répondre" + 30 secondes</p>
+            <p>• 4 réponses possibles (A, B, C, D)</p>
+            
+            <h3 style="color: var(--or); margin-top: 20px;">4 À La Suite</h3>
+            <p>• Barre 0-1-2-3-4</p>
+            <p>• 40 secondes, 4 bonnes réponses d'affilée</p>
+            
+            <h3 style="color: var(--or); margin-top: 20px;">Face À Face</h3>
+            <p>• 2 finalistes</p>
+            <p>• Zones 4-3-2-1 points qui descendent</p>
+            <p>• 20 secondes avec indices progressifs</p>
+            <p>• Premier à 12 points gagne</p>
+        </div>
+    `;
+    document.getElementById('modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+// Démarrer
+init();
