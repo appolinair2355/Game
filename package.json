@@ -1,12 +1,12 @@
 {
   "name": "questions-pour-un-champion",
-  "version": "4.0.0",
-  "description": "Questions pour un Champion - Multi-joueur avec robots et admin",
+  "version": "5.0.0",
+  "description": "Questions pour un Champion - Photos, voix homme/femme, zones FAF exactes",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["jeu", "quiz", "multiplayer", "robots", "admin"],
+  "keywords": ["jeu", "quiz", "photos", "voix", "tv"],
   "author": "",
   "license": "MIT",
   "dependencies": {
